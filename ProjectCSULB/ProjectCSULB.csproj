@@ -121,6 +121,7 @@
     </ApplicationDefinition>
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Model\ApplicationConstants.cs" />
+    <Compile Include="Model\ConflictData.cs" />
     <Compile Include="Model\Course.cs" />
     <Compile Include="Model\FileHelper.cs" />
     <Compile Include="Model\DataItem.cs" />
@@ -138,6 +139,7 @@
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ScheduleViewModel.cs" />
+    <Compile Include="ViewModel\StudentViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="Views\ScheduleView.xaml.cs">
       <DependentUpon>ScheduleView.xaml</DependentUpon>

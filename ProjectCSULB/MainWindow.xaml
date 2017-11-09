@@ -13,6 +13,7 @@
     
     <Window.Resources>
         <xceed:DataGridCollectionViewSource x:Key="mySource" Source="{Binding Path=ScheduleForSem}"></xceed:DataGridCollectionViewSource>
+        <xceed:DataGridCollectionViewSource x:Key="Conflict" Source="{Binding Path=ConflictDataAnalysis}"></xceed:DataGridCollectionViewSource>
         <ResourceDictionary x:Key="dict">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Skins/MainSkin.xaml" />
@@ -59,15 +60,19 @@
         <DockPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
         <DockPanel DockPanel.Dock="Top" >
 
-                <Grid MaxHeight="600">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Height="500">
+                <StackPanel Orientation="Vertical">
+                <Grid MaxHeight="400">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Height="400">
                     <Grid ScrollViewer.CanContentScroll="True" >
-            <TextBlock DockPanel.Dock="Left"   Text="{Binding Path=CourseData}" MaxWidth="600"></TextBlock>
+                    <TextBlock DockPanel.Dock="Left"   Text="{Binding Path=CourseData}" MaxWidth="500"></TextBlock>
                     </Grid>
                 </ScrollViewer>
                 </Grid>
-            
-            
+
+                    <DockPanel>
+                        <xceed:DataGridControl AutoCreateColumns="True" Height="300" ItemsSource="{Binding Source={StaticResource Conflict}}"></xceed:DataGridControl>
+                    </DockPanel>
+                </StackPanel>
 
                 <!--<DataGrid DockPanel.Dock="Right" ItemsSource="{Binding Path=Schedule}" MaxHeight="500"></DataGrid>-->
 

@@ -14,11 +14,11 @@ namespace ProjectCSULB.Model
             {
                 return new Dictionary<string, string>()
                 {
-                    {"Mathematics","http://web.csulb.edu/divisions/aa/catalog/2014-2015/roadmaps/cnsm/math/index.html" },
-                    {"Chemistry","http://web.csulb.edu/divisions/aa/catalog/2014-2015/roadmaps/cnsm/chem/index.html" },
-                    {"BioChemistry","http://web.csulb.edu/divisions/aa/catalog/2014-2015/roadmaps/cnsm/chem/chembs02-4yr.html" },
-                    {"Geology","http://web.csulb.edu/divisions/aa/catalog/2014-2015/roadmaps/cnsm/geol/index.html" },
-                    {"Physics","http://web.csulb.edu/divisions/aa/catalog/2014-2015/roadmaps/cnsm/phys/index.html" }
+                    {"Mathematics","http://web.csulb.edu/divisions/aa/catalog/2012-2013/roadmaps/cnsm/math/index.html" },
+                    {"Chemistry","http://web.csulb.edu/divisions/aa/catalog/2012-2013/roadmaps/cnsm/chem/index.html" },
+                    {"BioChemistry","http://web.csulb.edu/divisions/aa/catalog/2012-2013/roadmaps/cnsm/chem/chembs02-4yr.html" },
+                    {"Geology","http://web.csulb.edu/divisions/aa/catalog/2012-2013/roadmaps/cnsm/geol/index.html" },
+                    {"Physics","http://web.csulb.edu/divisions/aa/catalog/2012-2013/roadmaps/cnsm/phys/index.html" }
                 };
             }
         }

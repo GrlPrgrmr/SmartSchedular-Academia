@@ -212,6 +212,21 @@ namespace ProjectCSULB.ViewModel
             set { geData = value; }
         }
 
+        private List<Student> studentData;
+
+        public List<Student> StudentData
+        {
+            get { return studentData; }
+            set { studentData = value; }
+        }
+
+        private ObservableCollection<ConflictData> conflictDataAnalysis;
+
+        public ObservableCollection<ConflictData> ConflictDataAnalysis
+        {
+            get { return conflictDataAnalysis; }
+            set { conflictDataAnalysis = value;  RaisePropertyChanged(()=>ConflictDataAnalysis); }
+        }
 
         private string baseYear;
 
@@ -223,8 +238,10 @@ namespace ProjectCSULB.ViewModel
         /// </summary>
         public MainViewModel(IDataService dataService)
         {
-
+            SelectedSem = "";
+            SelectedYear = "";
             GetConflictsCommand = new RelayCommand(getConflicts);
+            ConflictDataAnalysis = new ObservableCollection<ConflictData>();
             baseYear = "2012";
             CourseNames = new ObservableCollection<string>();
             CollegeList = new ObservableCollection<string>(ApplicationConstants.CollegeList);
@@ -237,7 +254,7 @@ namespace ProjectCSULB.ViewModel
         {
             getData();
 
-            List<Subject> subByCourse = CurrentCourse.SemesterList.Select(s => s.SubjectList).ToList()[0];
+            List<Subject> subByCourse = CurrentCourse.SemesterList[getSemesterIndex()].SubjectList;
 
             var temp = Schedule.Select(s => s.Subject.Replace("    ", String.Empty)).ToList();
 
@@ -245,6 +262,9 @@ namespace ProjectCSULB.ViewModel
                 (Schedule
                 .Where(s => subByCourse
                 .Any(c => c.Title == s.Subject.Replace("    ", String.Empty))));
+
+            //capacity of all sections for subjects in the semester
+            var allSubjectSectionsWithCapacity = ScheduleForSem.GroupBy(x=>x.Subject).Select(s => new { sub = s.Key, totalCapacity = s.Sum(c1=> Convert.ToInt32(c1.Enrollment_Cap)) });
 
             foreach (var item in ScheduleForSem)
             {
@@ -270,17 +290,19 @@ namespace ProjectCSULB.ViewModel
             //                                    .ToList();
 
             var groupsFromSchedule = ScheduleForSem.GroupBy(s => s.Days);
+            StudentData = StudentViewModel.getStudentData().Where(x => x.Major == SelectedCourse).ToList();
+            int studentCountInMajor = StudentData.Count;
 
             foreach (var group in groupsFromSchedule)
             {
                 var days = group.Key;
 
                 //main logic to find the time overlap
-                var query = group.Where(s1 => group.Any(s2 => s1.Subject != s2.Subject && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList();
+                var query = group.Where(s1 => group.Any(s2 => !s1.Subject.Equals(s2.Subject) && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList();
 
                 foreach (var item in query)
                 {
-                    ScheduleForSem.Where(s => s.Class_Nbr == item.Class_Nbr).Select(c => { c.Color = "Color"; return c; }).ToList();
+                    ScheduleForSem.Where(s => s.Class_Nbr == item.Class_Nbr ).Select(c => { c.Color = "Color"; return c; }).ToList();
                     RaisePropertyChanged(() => ScheduleForSem);
                 }
                 var count = query.Count;
@@ -291,7 +313,22 @@ namespace ProjectCSULB.ViewModel
             //           select new { sub.Name, sub.Title, schd.Units, schd.Begin_Time, schd.End_Time }).ToList();
 
 
-        }
+            //extract capacity of all the sections conflicting with somebody
+            ConflictDataAnalysis =new ObservableCollection<ConflictData>( ScheduleForSem.Where(s=> s.Color == "Color" && (s.Components == "SEM" || s.Components=="LEC")).
+                                    GroupBy(row => row.Subject).Select(c => 
+                                    new ConflictData { SubjectName = c.First().Subject, ConflictingSectionCapacity = c.Sum(c1=> Convert.ToInt32( c1.Enrollment_Cap)),Demand=studentCountInMajor}));
+
+            //updating all sections capacity for conflict data
+            List<ConflictData> testData = (from cd in ConflictDataAnalysis
+                           join ascd in allSubjectSectionsWithCapacity on cd.SubjectName equals ascd.sub
+                           select new ConflictData() { SubjectName = cd.SubjectName,
+                                                       ConflictingSectionCapacity=cd.ConflictingSectionCapacity,
+                                                        Demand=cd.Demand,
+                                                         TotalCapacity = ascd.totalCapacity}).ToList();
+
+            ConflictDataAnalysis =new ObservableCollection<ConflictData>( testData.ToList());
+
+             }
 
         private void getData()
         {
@@ -327,7 +364,7 @@ namespace ProjectCSULB.ViewModel
                                 if (!temp)
                                 {
                                     //if subject is not GE course then extract string as follows
-                                    var code = Regex.Replace(sub.Name, @"[^0-9]+", "");
+                                    var code = Regex.Replace(sub.Name, @"[^0-9]+", "").Substring(0,3);
                                     sub.Title = ApplicationConstants.CourseTitles.Where(s => sub.Name.Contains(s)).FirstOrDefault() + code;
                                 }
                                 else
@@ -342,7 +379,7 @@ namespace ProjectCSULB.ViewModel
                         
                     }
 
-                    addGEDataToRoadmap();
+                    //addGEDataToRoadmap();
 
                         foreach (var sub in data.SemesterList[index].SubjectList)
                         {
@@ -352,7 +389,8 @@ namespace ProjectCSULB.ViewModel
 
                     CourseData = data.Name + "\n" + " | " + r.ToString();
 
-                    using (CsvReader csv = new CsvReader(File.OpenText(@"E:\New Job\schedule\Fall2012.csv")))
+
+                    using (CsvReader csv = new CsvReader(File.OpenText(@"E:\New Job\schedule\"+SelectedSem+SelectedYear+".csv")))
                     {
                         csv.Configuration.RegisterClassMap<ScheduleMap>();
                         IEnumerable<ScheduleReportItem> dataReport = csv.GetRecords<ScheduleReportItem>().ToList();

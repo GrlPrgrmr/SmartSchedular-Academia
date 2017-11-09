@@ -32,5 +32,8 @@ namespace ProjectCSULB.ViewModel
             CurrentSchedule = schedule;
 
         }
+
+
+        
     }
 }
