@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:xceed="http://schemas.xceed.com/wpf/xaml/datagrid"
         mc:Ignorable="d ignore"
         Height="500"
         Width="1200"
@@ -11,7 +12,8 @@
         DataContext="{Binding Main, Source={StaticResource Locator}}">
     
     <Window.Resources>
-        <ResourceDictionary>
+        <xceed:DataGridCollectionViewSource x:Key="mySource" Source="{Binding Path=ScheduleForSem}"></xceed:DataGridCollectionViewSource>
+        <ResourceDictionary x:Key="dict">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Skins/MainSkin.xaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -20,19 +22,39 @@
 
     <DockPanel>
         <DockPanel DockPanel.Dock="Top">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-                <Label FontSize="18" HorizontalAlignment="Left">Select Course</Label>
-                <ComboBox ItemsSource="{Binding Path=CourseNames}" SelectedItem="{Binding Path=SelectedCourse,UpdateSourceTrigger=PropertyChanged}" Margin="20,0,0,0" Width="350" Height="40"></ComboBox>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-            <Label DockPanel.Dock="Left" FontSize="18" Margin="0,0,0,0">Enter URL</Label>
-            <TextBox TextWrapping="Wrap" IsReadOnly="True" DockPanel.Dock="Left" Margin="40,0,0,0"  Width="400" Height="40" Text="{Binding Path=URL}"></TextBox>
-            
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,20,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <Label FontSize="18">Select College</Label>
+                    <ComboBox Width="300" ItemsSource="{Binding CollegeList}" SelectedItem="{Binding SelectedCollege, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
+                 </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                    <Label DockPanel.Dock="Left" FontSize="18" Margin="0,0,0,0">URL</Label>
+                    <TextBox TextWrapping="Wrap" IsReadOnly="True" DockPanel.Dock="Left" Margin="40,0,0,0"  Width="400" Height="40" Text="{Binding Path=URL}"></TextBox>
+
+                </StackPanel>
+
+
+
             </StackPanel>
 
-            <Button Margin="30,0,0,0" Width="150" Command="{Binding Path=GetConflictsCommand}" >Get Conflicts</Button>
-            <Button Margin="0,10,0,0" Width="200" Command="{Binding Path=GetDataCommand}">Get Data</Button>
-            
+            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                <StackPanel Orientation="Horizontal">
+                <Label FontSize="18" HorizontalAlignment="Left">Select Course</Label>
+                <ComboBox ItemsSource="{Binding Path=CourseNames}" SelectedItem="{Binding Path=SelectedCourse,UpdateSourceTrigger=PropertyChanged}" Margin="20,0,0,0" Width="350" Height="40"></ComboBox>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Label FontSize="18">Semester</Label>
+                        <ComboBox Width="100" Margin="10,0,0,0" ItemsSource="{Binding SemList}"  SelectedItem="{Binding SelectedSem,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                        <Label FontSize="18">Year</Label>
+                        <ComboBox Width="100" Margin="10,0,0,0" ItemsSource="{Binding YearsList}" SelectedItem="{Binding SelectedYear,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
+                    </StackPanel>
+                    <Button Margin="30,0,0,0" Height="40" Width="150" Command="{Binding Path=GetConflictsCommand}" >Get Conflicts</Button>
+                </StackPanel>
+            </StackPanel>
+
         </DockPanel>
         <DockPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
         <DockPanel DockPanel.Dock="Top" >
@@ -44,10 +66,30 @@
                     </Grid>
                 </ScrollViewer>
                 </Grid>
+            
+            
 
-                <DataGrid DockPanel.Dock="Right" ItemsSource="{Binding Path=Schedule}" MaxHeight="500"></DataGrid>
+                <!--<DataGrid DockPanel.Dock="Right" ItemsSource="{Binding Path=Schedule}" MaxHeight="500"></DataGrid>-->
+
+                <DockPanel>
+                    <xceed:DataGridControl 
+                        ItemsSource="{Binding Source={StaticResource mySource}}" 
+                        AutoCreateColumns="True">
+                        <!--<xceed:Cell>
+                            <Style TargetType="xceed:Cell">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Color}" Value="Color">
+                                        <Setter Property="Background" Value="Red"></Setter>
+                                    </DataTrigger>
+
+                                </Style.Triggers>
+                            </Style>
+                        </xceed:Cell>-->
+                        
+                    </xceed:DataGridControl>
+                </DockPanel>
         </DockPanel>
-            <DockPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
+            <!--<DockPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
                 <DataGrid ItemsSource="{Binding Path=ScheduleForSem}" MinHeight="300">
                     <DataGrid.CellStyle>
                         <Style TargetType="DataGridCell">
@@ -60,7 +102,7 @@
                         </Style>
                     </DataGrid.CellStyle>
                 </DataGrid>
-            </DockPanel>
+            </DockPanel>-->
         </DockPanel>
     </DockPanel>
 </Window>

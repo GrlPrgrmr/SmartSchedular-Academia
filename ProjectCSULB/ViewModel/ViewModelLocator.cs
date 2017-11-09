@@ -39,6 +39,7 @@ namespace ProjectCSULB.ViewModel
             }
 
             SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register<ScheduleViewModel>();
         }
 
         /// <summary>
@@ -52,6 +53,16 @@ namespace ProjectCSULB.ViewModel
             get
             {
                 return ServiceLocator.Current.GetInstance<MainViewModel>();
+            }
+        }
+
+
+        public ScheduleViewModel Schedule
+        {
+            get
+            {
+
+                return ServiceLocator.Current.GetInstance<ScheduleViewModel>();
             }
         }
 

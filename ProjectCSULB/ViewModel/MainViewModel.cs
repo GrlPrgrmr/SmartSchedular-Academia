@@ -11,6 +11,7 @@ using CsvHelper;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using ProjectCSULB.Views;
 
 namespace ProjectCSULB.ViewModel
 {
@@ -22,25 +23,29 @@ namespace ProjectCSULB.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
+
+        #region properties
         private string url;
 
         public string URL
         {
             get { return url; }
-            set { url = value; RaisePropertyChanged(()=>this.URL); }
+            set { url = value; RaisePropertyChanged(() => this.URL); }
         }
 
         private string courseData;
-        public  string CourseData
+        public string CourseData
         {
             get { return courseData; }
-            set { courseData = value; RaisePropertyChanged();
+            set
+            {
+                courseData = value; RaisePropertyChanged();
             }
         }
 
-        private Schedule  currentSchedule;
+        private Schedule currentSchedule;
 
-        public Schedule  CurrentSchedule
+        public Schedule CurrentSchedule
         {
             get { return currentSchedule; }
             set { currentSchedule = value; }
@@ -52,7 +57,49 @@ namespace ProjectCSULB.ViewModel
         public List<ScheduleReportItem> Schedule
         {
             get { return schdule; }
-            set { schdule = value; RaisePropertyChanged(()=>Schedule); }
+            set { schdule = value; RaisePropertyChanged(() => Schedule); }
+        }
+
+        private ObservableCollection<string> yearsList;
+
+        public ObservableCollection<string> YearsList
+        {
+            get { return yearsList; }
+            set { yearsList = value; RaisePropertyChanged(() => YearsList); }
+        }
+
+
+        private string selectedYear;
+
+        public string SelectedYear
+        {
+            get { return selectedYear; }
+            set { selectedYear = value; RaisePropertyChanged(() => SelectedYear); }
+        }
+
+
+        private ObservableCollection<string> semList;
+
+        public ObservableCollection<string> SemList
+        {
+            get { return semList; }
+            set { semList = value; RaisePropertyChanged(() => SemList); }
+        }
+
+        private string selectedSem;
+
+        public string SelectedSem
+        {
+            get { return selectedSem; }
+            set { selectedSem = value; RaisePropertyChanged(() => SelectedSem); }
+        }
+
+        private ObservableCollection<string> collegeList;
+
+        public ObservableCollection<string> CollegeList
+        {
+            get { return collegeList; }
+            set { collegeList = value; RaisePropertyChanged(() => CollegeList); }
         }
 
 
@@ -61,8 +108,38 @@ namespace ProjectCSULB.ViewModel
         public Course CurrentCourse
         {
             get { return currentCourse; }
-            set { currentCourse = value; RaisePropertyChanged(()=>CurrentCourse); }
+            set { currentCourse = value; RaisePropertyChanged(() => CurrentCourse); }
         }
+
+        private string selectedCollege;
+
+        public string SelectedCollege
+        {
+            get { return selectedCollege; }
+            set
+            {
+                selectedCollege = value;
+                if (SelectedCollege != null)
+                {
+                    switch (SelectedCollege)
+                    {
+                        case "College of Engineering":
+                            {
+                                CourseNames = new ObservableCollection<string>(ApplicationConstants.CoursesCOE);
+                                break;
+                            }
+                        case "College of Natural Sciences and Maths":
+                            {
+                                CourseNames = new ObservableCollection<string>(ApplicationConstants.CoursesRoadmapNSM.Select(x => x.Key).ToList());
+                                break;
+                            }
+                    }
+                }
+                RaisePropertyChanged(() => SelectedCollege);
+            }
+        }
+
+
 
 
         private ObservableCollection<string> courseNames;
@@ -70,7 +147,12 @@ namespace ProjectCSULB.ViewModel
         public ObservableCollection<string> CourseNames
         {
             get { return courseNames; }
-            set { courseNames = value; }
+            set
+            {
+                courseNames = value;
+
+                RaisePropertyChanged(() => CourseNames);
+            }
         }
 
         private string selectedCourse;
@@ -81,8 +163,28 @@ namespace ProjectCSULB.ViewModel
             set
             {
                 selectedCourse = value;
-                URL = ApplicationConstants.CourseRoadmapLinks[selectedCourse];
-                RaisePropertyChanged(()=>SelectedCourse);
+
+                if (SelectedCollege != null)
+                {
+                    switch (SelectedCollege)
+                    {
+                        case "College of Engineering":
+                            {
+                                URL = ApplicationConstants.CourseRoadmapCOE[selectedCourse];
+                                break;
+                            }
+                        case "College of Natural Sciences and Maths":
+                            {
+                                URL = ApplicationConstants.CoursesRoadmapNSM[selectedCourse];
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please Select College!!!");
+                }
+                RaisePropertyChanged(() => SelectedCourse);
             }
         }
 
@@ -91,7 +193,7 @@ namespace ProjectCSULB.ViewModel
         public ObservableCollection<ScheduleReportItem> ScheduleForSem
         {
             get { return scheduleForSem; }
-            set { scheduleForSem = value; RaisePropertyChanged(()=> ScheduleForSem); }
+            set { scheduleForSem = value; RaisePropertyChanged(() => ScheduleForSem); }
         }
 
         private RelayCommand getConflictsCommand;
@@ -111,36 +213,36 @@ namespace ProjectCSULB.ViewModel
         }
 
 
-        private RelayCommand getDataCommand;
+        private string baseYear;
 
-        public RelayCommand GetDataCommand
-        {
-            get { return getDataCommand; }
-            private set { getDataCommand = value; }
-        }
+        #endregion
+
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
         public MainViewModel(IDataService dataService)
         {
-            GetDataCommand = new RelayCommand(getData);
+
             GetConflictsCommand = new RelayCommand(getConflicts);
-
+            baseYear = "2012";
             CourseNames = new ObservableCollection<string>();
-            CourseNames = new ObservableCollection<string>( ApplicationConstants.CourseListStrings);
-
+            CollegeList = new ObservableCollection<string>(ApplicationConstants.CollegeList);
+            //CourseNames = new ObservableCollection<string>( ApplicationConstants.CourseListStrings);
+            YearsList = new ObservableCollection<string>(ApplicationConstants.YearsList);
+            SemList = new ObservableCollection<string>(ApplicationConstants.SemesterList);
         }
 
         private void getConflicts()
         {
+            getData();
 
             List<Subject> subByCourse = CurrentCourse.SemesterList.Select(s => s.SubjectList).ToList()[0];
 
             var temp = Schedule.Select(s => s.Subject.Replace("    ", String.Empty)).ToList();
 
-            ScheduleForSem =new ObservableCollection<ScheduleReportItem>
-                ( Schedule 
+            ScheduleForSem = new ObservableCollection<ScheduleReportItem>
+                (Schedule
                 .Where(s => subByCourse
                 .Any(c => c.Title == s.Subject.Replace("    ", String.Empty))));
 
@@ -169,14 +271,14 @@ namespace ProjectCSULB.ViewModel
 
             var groupsFromSchedule = ScheduleForSem.GroupBy(s => s.Days);
 
-            foreach(var group in groupsFromSchedule)
+            foreach (var group in groupsFromSchedule)
             {
                 var days = group.Key;
 
                 //main logic to find the time overlap
                 var query = group.Where(s1 => group.Any(s2 => s1.Subject != s2.Subject && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList();
 
-                foreach(var item in query)
+                foreach (var item in query)
                 {
                     ScheduleForSem.Where(s => s.Class_Nbr == item.Class_Nbr).Select(c => { c.Color = "Color"; return c; }).ToList();
                     RaisePropertyChanged(() => ScheduleForSem);
@@ -194,8 +296,8 @@ namespace ProjectCSULB.ViewModel
         private void getData()
         {
             Course data = new Course();
-            string r="";
-          
+            string r = "";
+
             try
             {
                 if (String.IsNullOrEmpty(SelectedCourse))
@@ -211,9 +313,9 @@ namespace ProjectCSULB.ViewModel
                     /*var r = from sem in data.SemesterList
                             from sub in sem.SubjectList
                             select new { data = sem.SemesterName+" | "+sem.TotalUnits+" | "+sub.Name+" | "+sub.Units};*/
-                    
 
-                    foreach (var sem in data.SemesterList)
+                    int index = getSemesterIndex();
+                    foreach(var sem in data.SemesterList)
                     {
                         foreach (var sub in sem.SubjectList)
                         {
@@ -230,29 +332,27 @@ namespace ProjectCSULB.ViewModel
                                 }
                                 else
                                 {
-                                        var code = Regex.Replace(sub.Name, @"[^0-9]+", "").Substring(0, 3);
-                                        sub.Title = ApplicationConstants.CourseTitles.Where(s => sub.Name.Contains(s)).FirstOrDefault() + code;
+                                    var code = Regex.Replace(sub.Name, @"[^0-9]+", "").Substring(0, 3);
+                                    sub.Title = ApplicationConstants.CourseTitles.Where(s => sub.Name.Contains(s)).FirstOrDefault() + code;
                                 }
-                                
+
                             }
-                            
-                                
+
                         }
+                        
                     }
 
                     addGEDataToRoadmap();
 
-                    foreach (var sem in data.SemesterList)
-                    {
-                        foreach (var sub in sem.SubjectList)
+                        foreach (var sub in data.SemesterList[index].SubjectList)
                         {
-                            r += sem.SemesterName + " | " + sem.TotalUnits + " | " + sub.Name + " | " + sub.Title + " | " + sub.Units + " \n ";
+                            r += data.SemesterList[index].SemesterName + " | " + data.SemesterList[index].TotalUnits + " | " + sub.Name + " | " + sub.Title + " | " + sub.Units + " \n ";
                         }
-                    }
+                    
 
                     CourseData = data.Name + "\n" + " | " + r.ToString();
 
-                    using (CsvReader csv = new CsvReader(File.OpenText(@"E:\New Job\schedule\CSULB Fall 12 schedule.csv")))
+                    using (CsvReader csv = new CsvReader(File.OpenText(@"E:\New Job\schedule\Fall2012.csv")))
                     {
                         csv.Configuration.RegisterClassMap<ScheduleMap>();
                         IEnumerable<ScheduleReportItem> dataReport = csv.GetRecords<ScheduleReportItem>().ToList();
@@ -262,15 +362,32 @@ namespace ProjectCSULB.ViewModel
                     }
 
                 }
-                
+
+
+                Window schd = new ScheduleView();
+                schd.DataContext = new ScheduleViewModel(CurrentSchedule);
+                schd.Show();
                 //Schedule = CSVHelper.getDataFromScheduleCSV(@"C:\Users\Neha\Desktop\ScheduleFall2006.csv");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 string s = ex.Message;
             }
         }
 
+        private int getSemesterIndex()
+        {
+            int indexCurrentSem;
+            indexCurrentSem = Array.IndexOf(ApplicationConstants.SemesterList,SelectedSem);
+            if (SelectedYear==baseYear)
+            {
+                return indexCurrentSem;
+            }
+            else
+            {
+                return indexCurrentSem + 4;
+            }
+        }
 
         private void addGEDataToRoadmap()
         {
@@ -279,9 +396,9 @@ namespace ProjectCSULB.ViewModel
 
             List<string> distinctGECourses = GECourses.getGECoursesName();
 
-            for(int i=0;i<CurrentCourse.SemesterList.Count;i++)
+            for (int i = 0; i < CurrentCourse.SemesterList.Count; i++)
             {
-                for(int j=0;j<CurrentCourse.SemesterList[i].SubjectList.Count;j++)
+                for (int j = 0; j < CurrentCourse.SemesterList[i].SubjectList.Count; j++)
                 {
                     var sub = CurrentCourse.SemesterList[i].SubjectList[j];
                     var tempString = Regex.Match(sub.Name, @"GE\-[A-Z]\d");
@@ -293,7 +410,7 @@ namespace ProjectCSULB.ViewModel
 
                         foreach (var ge_sub in GESubs)
                         {
-                            CurrentCourse.SemesterList[i].SubjectList.Add(new Subject() { Name = "GE", Title = ge_sub.Subject.Replace(" ",String.Empty) });
+                            CurrentCourse.SemesterList[i].SubjectList.Add(new Subject() { Name = "GE", Title = ge_sub.Subject.Replace(" ", String.Empty) });
                         }
 
                         //string subs = String.Join(",",(object[]) GESubs.Select(s=>s.Subject).ToArray()).ToString();
@@ -302,10 +419,10 @@ namespace ProjectCSULB.ViewModel
                 }
             }
 
-           
+
         }
 
-        private static Course scrapeDataFromURL(string URL,string name)
+        private static Course scrapeDataFromURL(string URL, string name)
         {
             Course course = new Course(name);
             List<Semester> semList = new List<Semester>();
@@ -325,13 +442,13 @@ namespace ProjectCSULB.ViewModel
                 .Select(tr => tr.Elements("td").Select(td => td.InnerText.Trim()).ToList())
                 .ToList();
 
-               
+
                 int offsetSemester = 3;
                 int offsetRow = 2;
                 Semester sem1 = new Semester();
                 Semester sem2 = new Semester();
 
-                for (int i = 0; i < table.Count; i+=3)
+                for (int i = 0; i < table.Count; i += 3)
                 {
                     for (int j = i % 3; j < 3; j++)
                     {
@@ -386,14 +503,14 @@ namespace ProjectCSULB.ViewModel
 
                 course.SemesterList = semList;
 
-              
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 string error = ex.Message;
             }
 
-            return course; 
+            return course;
 
         }
 

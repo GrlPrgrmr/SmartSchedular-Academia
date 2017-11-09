@@ -130,6 +130,18 @@ namespace ProjectCSULB.Model
         }
     }
 
+    public sealed class StudentMap: CsvClassMap<Student>
+    {
+
+        public StudentMap()
+        {
+
+            Map(m => m.StudentId).Name("StudentId");
+            Map(m => m.StudentName).Name("StudentName");
+            Map(m => m.Major).Name("Major");
+            Map(m => m.ExpectedGradYear).Name("ExpectedGradYear");
+        }
+    }
     public sealed class GEMap: CsvClassMap<GECourses>
     {
         public GEMap()
