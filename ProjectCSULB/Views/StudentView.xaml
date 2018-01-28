@@ -1,0 +1,33 @@
+﻿<Window x:Class="ProjectCSULB.Views.StudentView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ProjectCSULB.Views"
+        mc:Ignorable="d"
+        xmlns:xceed="http://schemas.xceed.com/wpf/xaml/datagrid"
+        DataContext="{Binding StudentVM,Source={StaticResource Locator}}"
+        Title="StudentView">
+    <Window.Resources>
+        <xceed:DataGridCollectionViewSource x:Key="StudentsData" Source="{Binding Path=StudentData}"></xceed:DataGridCollectionViewSource>
+    </Window.Resources>
+    <DockPanel>
+        <StackPanel Orientation="Vertical">
+            <DockPanel Height="500">
+            <xceed:DataGridControl AutoCreateColumns="True" ItemsSource="{Binding Source={StaticResource StudentsData}}">
+                
+            </xceed:DataGridControl>
+            </DockPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <Label>Total students:</Label>
+                <TextBox IsReadOnly="True" Text="{Binding Path=StudentHeadCount}" Width="100"></TextBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <Label>Students Affected:</Label>
+                <TextBox IsReadOnly="True" Text="{Binding Path=StudentsAffected}" Width="100"></TextBox>
+            </StackPanel>
+        </StackPanel>
+    </DockPanel>
+</Window>

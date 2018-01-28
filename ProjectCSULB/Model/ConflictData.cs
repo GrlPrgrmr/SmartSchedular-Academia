@@ -32,7 +32,7 @@ namespace ProjectCSULB.Model
             set { conflictingSectionCapacity = value; }
         }
 
-
+       
         private int demand;
 
         public int Demand

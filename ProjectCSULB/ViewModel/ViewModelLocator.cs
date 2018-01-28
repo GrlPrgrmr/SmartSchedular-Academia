@@ -40,6 +40,7 @@ namespace ProjectCSULB.ViewModel
 
             SimpleIoc.Default.Register<MainViewModel>();
             SimpleIoc.Default.Register<ScheduleViewModel>();
+            SimpleIoc.Default.Register<StudentViewModel>();
         }
 
         /// <summary>
@@ -66,6 +67,13 @@ namespace ProjectCSULB.ViewModel
             }
         }
 
+        public StudentViewModel StudentVM
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<StudentViewModel>();
+            }
+        }
         /// <summary>
         /// Cleans up all the resources.
         /// </summary>

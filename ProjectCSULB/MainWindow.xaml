@@ -72,6 +72,8 @@
                     <DockPanel>
                         <xceed:DataGridControl AutoCreateColumns="True" Height="300" ItemsSource="{Binding Source={StaticResource Conflict}}"></xceed:DataGridControl>
                     </DockPanel>
+
+                    <Button Width="150" Height="40" Margin="0,10,0,0" Command="{Binding SeeStudentsData}">See Students Data</Button>
                 </StackPanel>
 
                 <!--<DataGrid DockPanel.Dock="Right" ItemsSource="{Binding Path=Schedule}" MaxHeight="500"></DataGrid>-->

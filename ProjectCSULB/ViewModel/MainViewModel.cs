@@ -21,6 +21,9 @@ namespace ProjectCSULB.ViewModel
     /// See http://www.mvvmlight.net
     /// </para>
     /// </summary>
+    
+
+
     public class MainViewModel : ViewModelBase
     {
 
@@ -212,12 +215,12 @@ namespace ProjectCSULB.ViewModel
             set { geData = value; }
         }
 
-        private List<Student> studentData;
+        private ObservableCollection<Student> studentData;
 
-        public List<Student> StudentData
+        public ObservableCollection<Student> StudentData
         {
             get { return studentData; }
-            set { studentData = value; }
+            set { studentData = value; RaisePropertyChanged(() => StudentData); }
         }
 
         private ObservableCollection<ConflictData> conflictDataAnalysis;
@@ -229,6 +232,31 @@ namespace ProjectCSULB.ViewModel
         }
 
         private string baseYear;
+
+        private string studentHeadCount;
+
+        public string StudentHeadCount
+        {
+            get { return studentHeadCount; }
+            set { studentHeadCount = value; RaisePropertyChanged(()=>StudentHeadCount); }
+        }
+
+        private int studentsAffected;
+
+        public int StudentsAffected
+        {
+            get { return studentsAffected; }
+            set { studentsAffected = value; RaisePropertyChanged(()=>StudentsAffected); }
+        }
+
+
+        private RelayCommand seeStudentsData;   
+
+        public RelayCommand SeeStudentsData
+        {
+            get { return new RelayCommand(showStudentsData); }
+            
+        }
 
         #endregion
 
@@ -254,7 +282,7 @@ namespace ProjectCSULB.ViewModel
         {
             getData();
 
-            List<Subject> subByCourse = CurrentCourse.SemesterList[getSemesterIndex()].SubjectList;
+            List<Subject> subByCourse = CurrentCourse.SemesterList[getSemesterIndex()==0?getSemesterIndex():getSemesterIndex()-1].SubjectList;
 
             var temp = Schedule.Select(s => s.Subject.Replace("    ", String.Empty)).ToList();
 
@@ -274,9 +302,9 @@ namespace ProjectCSULB.ViewModel
                     var temp1 = dt.TimeOfDay;
 
 
-                    TimeSpan b_time = TimeSpan.Parse(item.Begin_Time.Substring(0, 5));
+                    TimeSpan b_time = DateTime.ParseExact(item.Begin_Time, "hh:mmtt", CultureInfo.InvariantCulture).TimeOfDay;
                     item.B_Time = b_time;
-                    TimeSpan e_time = TimeSpan.Parse(item.End_Time.Substring(0, 5));
+                    TimeSpan e_time = DateTime.ParseExact(item.End_Time, "hh:mmtt", CultureInfo.InvariantCulture).TimeOfDay;
                     item.E_Time = e_time;
                 }
 
@@ -289,10 +317,11 @@ namespace ProjectCSULB.ViewModel
             //                                    (s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time))).GroupBy(s => s.Days)
             //                                    .ToList();
 
-            var groupsFromSchedule = ScheduleForSem.GroupBy(s => s.Days);
-            StudentData = StudentViewModel.getStudentData().Where(x => x.Major == SelectedCourse).ToList();
-            int studentCountInMajor = StudentData.Count;
 
+            var groupsFromSchedule = ScheduleForSem.GroupBy(s => s.Days);
+            StudentData =new ObservableCollection<Student>( StudentViewModel.getStudentData().Where(x => x.Major == SelectedCourse).ToList());
+            int studentCountInMajor = StudentData.Count;
+            
             foreach (var group in groupsFromSchedule)
             {
                 var days = group.Key;
@@ -312,9 +341,55 @@ namespace ProjectCSULB.ViewModel
             //           join schd in Schedule on sub.Title equals schd.Subject.Replace(" ",String.Empty) + " " + schd.Catalog_Nbr
             //           select new { sub.Name, sub.Title, schd.Units, schd.Begin_Time, schd.End_Time }).ToList();
 
+            //extract subjects with sections 
+
+            var subjectsSectionsConflicts = ScheduleForSem.Where(s => s.Color == "Color" && (s.Components == "SEM" || s.Components == "LEC")).
+                                    GroupBy(row => row.Subject).ToDictionary(g=>g.Key, g=>g.ToList());
+
+            //trying monte carlo simulation to generate probabblity distribution for students taking up sections and allocating
+            //subjects randomly to students
+            foreach (var student in StudentData)
+            {
+
+                student.SubjectList = new List<ScheduleReportItem>();
+                var groupSubjects = ScheduleForSem.Where(s=>s.Components == "SEM" || s.Components=="LEC").GroupBy(x => x.Subject);
+
+                foreach (var sub in groupSubjects)
+                {
+                    Random random = new Random();
+                    int indexRandom = random.Next(sub.ToList().Count - 1);
+
+                    var subjectPicked = sub.ToList()[indexRandom];
+                    student.SubjectList.Add(subjectPicked);
+                }
+
+
+            }
+
+            bool flagStduentConflictFound = false;
+
+            //figure out how many students from above list have been assigned conflicting sections
+            //var queryComplex = StudentData.Where(s => s.SubjectList.Any(sub => ScheduleForSem.Where(sc => sc.Color == "Color").Contains(sub)));
+            var queryStudentsEffected = StudentData.Select(row => new { studentId = row.StudentId, subList = row.SubjectList ,CountConflictingSections = row.SubjectList.Where(sub => sub.Color == "Color").ToList() });
+
+            foreach(var student in queryStudentsEffected)
+            {
+                var queryStud = student.subList.Where(s1 => student.subList.Any(s2 => !s1.Subject.Equals(s2.Subject) && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList().Select(c=> { c.Color = "ColorStud"; flagStduentConflictFound = true; return c; }).ToList() ;
+            
+                if(flagStduentConflictFound)
+                {
+                    StudentsAffected++;
+                    flagStduentConflictFound = false;
+                }
+            }
+
+            
+            StudentHeadCount = StudentData.Count.ToString();
+
 
             //extract capacity of all the sections conflicting with somebody
-            ConflictDataAnalysis =new ObservableCollection<ConflictData>( ScheduleForSem.Where(s=> s.Color == "Color" && (s.Components == "SEM" || s.Components=="LEC")).
+
+            ConflictDataAnalysis = new ObservableCollection<ConflictData>( ScheduleForSem.Where(s=> s.Color == "Color" && (s.Components == "SEM" || s.Components=="LEC")).
                                     GroupBy(row => row.Subject).Select(c => 
                                     new ConflictData { SubjectName = c.First().Subject, ConflictingSectionCapacity = c.Sum(c1=> Convert.ToInt32( c1.Enrollment_Cap)),Demand=studentCountInMajor}));
 
@@ -327,6 +402,10 @@ namespace ProjectCSULB.ViewModel
                                                          TotalCapacity = ascd.totalCapacity}).ToList();
 
             ConflictDataAnalysis =new ObservableCollection<ConflictData>( testData.ToList());
+
+
+           
+            
 
              }
 
@@ -352,6 +431,10 @@ namespace ProjectCSULB.ViewModel
                             select new { data = sem.SemesterName+" | "+sem.TotalUnits+" | "+sub.Name+" | "+sub.Units};*/
 
                     int index = getSemesterIndex();
+                    if(index!=0)
+                    {
+                        index = index - 1;
+                    }
                     foreach(var sem in data.SemesterList)
                     {
                         foreach (var sub in sem.SubjectList)
@@ -413,11 +496,18 @@ namespace ProjectCSULB.ViewModel
             }
         }
 
+        private void showStudentsData()
+        {
+            Window studentWindow = new StudentView();
+            studentWindow.DataContext = new StudentViewModel(ScheduleForSem);
+            studentWindow.Show();
+
+        }
         private int getSemesterIndex()
         {
             int indexCurrentSem;
             indexCurrentSem = Array.IndexOf(ApplicationConstants.SemesterList,SelectedSem);
-            if (SelectedYear==baseYear)
+            if (SelectedYear==baseYear || SelectedSem=="Spring" || SelectedSem == "Summer")
             {
                 return indexCurrentSem;
             }
@@ -425,7 +515,7 @@ namespace ProjectCSULB.ViewModel
             {
                 return indexCurrentSem + 4;
             }
-        }
+         }
 
         private void addGEDataToRoadmap()
         {

@@ -16,7 +16,7 @@ namespace ProjectCSULB.Model
             set { studentId = value; }
         }
 
-
+        
         private string studentName;
 
         public string StudentName
@@ -40,6 +40,24 @@ namespace ProjectCSULB.Model
         {
             get { return expectedGradYear; }
             set { expectedGradYear = value; }
+        }
+
+
+        private int subInConflict;
+
+        public int SubInConflict
+        {
+            get { return subInConflict; }
+            set { subInConflict = value; }
+        }
+
+
+        private List<ScheduleReportItem> subjectList;
+
+        public List<ScheduleReportItem> SubjectList
+        {
+            get { return subjectList; }
+            set { subjectList = value; }
         }
 
 
