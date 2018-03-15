@@ -59,6 +59,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.3.0.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
       <Private>True</Private>
@@ -123,6 +124,8 @@
     <Compile Include="Model\ApplicationConstants.cs" />
     <Compile Include="Model\ConflictData.cs" />
     <Compile Include="Model\Course.cs" />
+    <Compile Include="Model\CryptoRandom.cs" />
+    <Compile Include="Model\DataReport.cs" />
     <Compile Include="Model\FileHelper.cs" />
     <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\DataService.cs" />

@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using System.Windows;
 
 namespace ProjectCSULB.ViewModel
 {
@@ -23,8 +23,16 @@ namespace ProjectCSULB.ViewModel
             set { studentData = value; RaisePropertyChanged(() => StudentData); }
         }
 
-      
-       public class studetDataAnalysis
+        private ObservableCollection<DataReport> dataReportList;
+
+        public ObservableCollection<DataReport> DataReportList
+        {
+            get { return dataReportList; }
+            set { dataReportList = value; RaisePropertyChanged(() => DataReportList); }
+        }
+
+
+        public class studetDataAnalysis
         {
             public string studentId;
             public int subInConflict;
@@ -49,9 +57,10 @@ namespace ProjectCSULB.ViewModel
         }
 
 
-        public static List<Student> getStudentData()
+
+        public static List<Student> getStudentData(string major)
         {
-            using (CsvReader csv = new CsvReader(File.OpenText(@"E:\New Job\StudentsData.csv")))
+            using (CsvReader csv = new CsvReader(File.OpenText(@"E:\New Job\Students Data\"+major+".csv")))
             {
                 csv.Configuration.RegisterClassMap<StudentMap>();
                 List<Student> dataReport = csv.GetRecords<Student>().ToList();
@@ -65,55 +74,86 @@ namespace ProjectCSULB.ViewModel
         {
 
         }
-        public  StudentViewModel(ObservableCollection<ScheduleReportItem> ScheduleForSem)
+        public  StudentViewModel(ObservableCollection<ScheduleReportItem> ScheduleForSem,int batchSize,Course currentCourse,string year,int iterCount)
         {
             StudentData = new ObservableCollection<Student>();
-            StudentData = new ObservableCollection<Student>( getStudentData());
-            int studentCountInMajor = StudentData.Count;
-            //trying monte carlo simulation to generate probabblity distribution for students taking up sections
-            foreach (var student in StudentData)
+            DataReportList = new ObservableCollection<DataReport>();
+
+            try
             {
+                
+                StudentData = new ObservableCollection<Student>(getStudentData(currentCourse.Name.Replace(" ", String.Empty)).Where(s => s.Major == currentCourse.Name && s.FreshmanYear == year).ToList().GetRange(0, batchSize));
+                int studentCountInMajor = StudentData.Count;
+                StudentHeadCount = StudentData.Count.ToString();
 
-                student.SubjectList = new List<ScheduleReportItem>();
-                var groupSubjects = ScheduleForSem.Where(s => s.Components == "SEM" || s.Components == "LEC").GroupBy(x => x.Subject);
-
-                foreach (var sub in groupSubjects)
+                for (int i = 0; i < iterCount; i++)
                 {
-                    Random random = new Random();
-                    int indexRandom = random.Next(sub.ToList().Count - 1);
+                    //trying monte carlo simulation to generate probability distribution for students taking up sections
+                    foreach (var student in StudentData)
+                    {
 
-                    var subjectPicked = sub.ToList()[indexRandom];
-                    student.SubjectList.Add(subjectPicked);
+                        student.SubjectList = new List<ScheduleReportItem>();
+                        var groupSubjects = ScheduleForSem.Where(s => s.Components == "SEM" || s.Components == "LEC" || s.Components == "ACT").GroupBy(x => x.Subject);
+
+                        foreach (var sub in groupSubjects)
+                        {
+                            Random random = new Random();
+                            int indexRandom = random.Next(sub.ToList().Count - 1);
+
+                            var subjectPicked = sub.ToList()[indexRandom];
+                            student.SubjectList.Add(subjectPicked);
+                        }
+
+
+                        //foreach (var sub in groupSubjects)
+                        //{
+                        //    CryptoRandom random = new CryptoRandom();
+                        //    int indexRandom = random.Next(sub.ToList().Count - 1);
+
+                        //    var subjectPicked = sub.ToList()[indexRandom];
+                        //    student.SubjectList.Add(subjectPicked);
+                        //}
+                        
+
+                        bool flagStduentConflictFound = false;
+
+
+                        //figure out how many students from above list have been assigned conflicting sections
+                        //var queryComplex = StudentData.Where(s => s.SubjectList.Any(sub => ScheduleForSem.Where(sc => sc.Color == "Color").Contains(sub)));
+                        
+                        var queryStud = student.SubjectList.Where(s1 => student.SubjectList.Any(s2 => !s1.Subject.Equals(s2.Subject) && s1.Days.Equals(s2.Days) && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList().Select(c => { c.Color = " "; flagStduentConflictFound = true; student.SubInConflict++; return c; }).ToList();
+
+                        if (flagStduentConflictFound)
+                        {
+                            StudentsAffected++;
+                            flagStduentConflictFound = false;
+                        }
+
+
+                        DataReport dRObj = new DataReport(batchSize, currentCourse, year, StudentsAffected, studentHeadCount);
+
+                        DataReportList.Add(dRObj);
+
+                        student.SubjectList.Clear();
+
+
+                    }
                 }
 
+                FileHelper.CreateCSVFromGenericList(new List<DataReport>(DataReportList), @"E:\New Job\DataReportCSULB.csv");
 
 
+                
             }
-
-
-            bool flagStduentConflictFound = false;
-
-            //figure out how many students from above list have been assigned conflicting sections
-            //var queryComplex = StudentData.Where(s => s.SubjectList.Any(sub => ScheduleForSem.Where(sc => sc.Color == "Color").Contains(sub)));
-            
-            foreach (var student in StudentData)
+            catch(Exception ex)
             {
-                var queryStud = student.SubjectList.Where(s1 => student.SubjectList.Any(s2 => !s1.Subject.Equals(s2.Subject) && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList().Select(c => { c.Color = "ColorStud"; flagStduentConflictFound = true; student.SubInConflict++; return c; }).ToList();
-
-                if (flagStduentConflictFound)
-                {
-                    StudentsAffected++;
-                    flagStduentConflictFound = false;
-                }
+                MessageBox.Show(ex.Message);
             }
-
-
-
-            StudentHeadCount = StudentData.Count.ToString();
 
             
         }
 
+       
 
     }
 }

@@ -9,7 +9,7 @@
         DataContext="{Binding StudentVM,Source={StaticResource Locator}}"
         Title="StudentView">
     <Window.Resources>
-        <xceed:DataGridCollectionViewSource x:Key="StudentsData" Source="{Binding Path=StudentData}"></xceed:DataGridCollectionViewSource>
+        <xceed:DataGridCollectionViewSource x:Key="StudentsData" Source="{Binding Path=DataReportList}"></xceed:DataGridCollectionViewSource>
     </Window.Resources>
     <DockPanel>
         <StackPanel Orientation="Vertical">

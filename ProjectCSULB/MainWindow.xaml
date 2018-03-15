@@ -34,23 +34,32 @@
 
                 </StackPanel>
 
-
+                <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                    <Label FontSize="18" HorizontalAlignment="Left">Select Course</Label>
+                    <ComboBox ItemsSource="{Binding Path=CourseNames}" SelectedItem="{Binding Path=SelectedCourse,UpdateSourceTrigger=PropertyChanged}" Margin="20,0,0,0" Width="350" Height="40"></ComboBox>
+                </StackPanel>
 
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                <StackPanel Orientation="Horizontal">
-                <Label FontSize="18" HorizontalAlignment="Left">Select Course</Label>
-                <ComboBox ItemsSource="{Binding Path=CourseNames}" SelectedItem="{Binding Path=SelectedCourse,UpdateSourceTrigger=PropertyChanged}" Margin="20,0,0,0" Width="350" Height="40"></ComboBox>
-                </StackPanel>
+               
                 <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Label FontSize="18">Semester</Label>
                         <ComboBox Width="100" Margin="10,0,0,0" ItemsSource="{Binding SemList}"  SelectedItem="{Binding SelectedSem,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
                         <Label FontSize="18">Year</Label>
                         <ComboBox Width="100" Margin="10,0,0,0" ItemsSource="{Binding YearsList}" SelectedItem="{Binding SelectedYear,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                        <Label FontSize="18">Batch Size</Label>
+                        <TextBox Text="{Binding Path=BatchSize}" Width="100"></TextBox>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                        <Label FontSize="18">Iteration Count</Label>
+                        <TextBox Text="{Binding Path=IterationCount}" Width="100"></TextBox>
                     </StackPanel>
                     <Button Margin="30,0,0,0" Height="40" Width="150" Command="{Binding Path=GetConflictsCommand}" >Get Conflicts</Button>
                 </StackPanel>

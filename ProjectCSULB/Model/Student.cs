@@ -34,12 +34,12 @@ namespace ProjectCSULB.Model
             set { major = value; }
         }
 
-        private string expectedGradYear;
+        private string freshmanYear;
 
-        public string ExpectedGradYear
+        public string FreshmanYear
         {
-            get { return expectedGradYear; }
-            set { expectedGradYear = value; }
+            get { return freshmanYear; }
+            set { freshmanYear = value; }
         }
 
 

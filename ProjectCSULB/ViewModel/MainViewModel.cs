@@ -46,6 +46,23 @@ namespace ProjectCSULB.ViewModel
             }
         }
 
+        private int batchSize;
+
+        public int BatchSize
+        {
+            get { return batchSize; }
+            set { batchSize = value; RaisePropertyChanged(() => BatchSize); }
+        }
+
+        private int iterationCount;
+
+        public int IterationCount
+        {
+            get { return iterationCount; }
+            set { iterationCount = value; RaisePropertyChanged(() => IterationCount); }
+        }
+
+
         private Schedule currentSchedule;
 
         public Schedule CurrentSchedule
@@ -268,6 +285,7 @@ namespace ProjectCSULB.ViewModel
         {
             SelectedSem = "";
             SelectedYear = "";
+            BatchSize = 0;
             GetConflictsCommand = new RelayCommand(getConflicts);
             ConflictDataAnalysis = new ObservableCollection<ConflictData>();
             baseYear = "2012";
@@ -319,9 +337,7 @@ namespace ProjectCSULB.ViewModel
 
 
             var groupsFromSchedule = ScheduleForSem.GroupBy(s => s.Days);
-            StudentData =new ObservableCollection<Student>( StudentViewModel.getStudentData().Where(x => x.Major == SelectedCourse).ToList());
-            int studentCountInMajor = StudentData.Count;
-            
+             
             foreach (var group in groupsFromSchedule)
             {
                 var days = group.Key;
@@ -346,52 +362,12 @@ namespace ProjectCSULB.ViewModel
             var subjectsSectionsConflicts = ScheduleForSem.Where(s => s.Color == "Color" && (s.Components == "SEM" || s.Components == "LEC")).
                                     GroupBy(row => row.Subject).ToDictionary(g=>g.Key, g=>g.ToList());
 
-            //trying monte carlo simulation to generate probabblity distribution for students taking up sections and allocating
-            //subjects randomly to students
-            foreach (var student in StudentData)
-            {
-
-                student.SubjectList = new List<ScheduleReportItem>();
-                var groupSubjects = ScheduleForSem.Where(s=>s.Components == "SEM" || s.Components=="LEC").GroupBy(x => x.Subject);
-
-                foreach (var sub in groupSubjects)
-                {
-                    Random random = new Random();
-                    int indexRandom = random.Next(sub.ToList().Count - 1);
-
-                    var subjectPicked = sub.ToList()[indexRandom];
-                    student.SubjectList.Add(subjectPicked);
-                }
-
-
-            }
-
-            bool flagStduentConflictFound = false;
-
-            //figure out how many students from above list have been assigned conflicting sections
-            //var queryComplex = StudentData.Where(s => s.SubjectList.Any(sub => ScheduleForSem.Where(sc => sc.Color == "Color").Contains(sub)));
-            var queryStudentsEffected = StudentData.Select(row => new { studentId = row.StudentId, subList = row.SubjectList ,CountConflictingSections = row.SubjectList.Where(sub => sub.Color == "Color").ToList() });
-
-            foreach(var student in queryStudentsEffected)
-            {
-                var queryStud = student.subList.Where(s1 => student.subList.Any(s2 => !s1.Subject.Equals(s2.Subject) && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList().Select(c=> { c.Color = "ColorStud"; flagStduentConflictFound = true; return c; }).ToList() ;
             
-                if(flagStduentConflictFound)
-                {
-                    StudentsAffected++;
-                    flagStduentConflictFound = false;
-                }
-            }
-
-            
-            StudentHeadCount = StudentData.Count.ToString();
-
-
             //extract capacity of all the sections conflicting with somebody
 
-            ConflictDataAnalysis = new ObservableCollection<ConflictData>( ScheduleForSem.Where(s=> s.Color == "Color" && (s.Components == "SEM" || s.Components=="LEC")).
+            /*ConflictDataAnalysis = new ObservableCollection<ConflictData>( ScheduleForSem.Where(s=> s.Color == "Color" && (s.Components == "SEM" || s.Components=="LEC")).
                                     GroupBy(row => row.Subject).Select(c => 
-                                    new ConflictData { SubjectName = c.First().Subject, ConflictingSectionCapacity = c.Sum(c1=> Convert.ToInt32( c1.Enrollment_Cap)),Demand=studentCountInMajor}));
+                                    new ConflictData { SubjectName = c.First().Subject, ConflictingSectionCapacity = c.Sum(c1=> Convert.ToInt32( c1.Enrollment_Cap)),Demand=studentCountInMajor}));*/
 
             //updating all sections capacity for conflict data
             List<ConflictData> testData = (from cd in ConflictDataAnalysis
@@ -403,10 +379,7 @@ namespace ProjectCSULB.ViewModel
 
             ConflictDataAnalysis =new ObservableCollection<ConflictData>( testData.ToList());
 
-
-           
             
-
              }
 
         private void getData()
@@ -499,7 +472,7 @@ namespace ProjectCSULB.ViewModel
         private void showStudentsData()
         {
             Window studentWindow = new StudentView();
-            studentWindow.DataContext = new StudentViewModel(ScheduleForSem);
+            studentWindow.DataContext = new StudentViewModel(ScheduleForSem,BatchSize,CurrentCourse,this.SelectedYear,IterationCount);
             studentWindow.Show();
 
         }
