@@ -153,6 +153,16 @@ namespace ProjectCSULB.ViewModel
                                 CourseNames = new ObservableCollection<string>(ApplicationConstants.CoursesRoadmapNSM.Select(x => x.Key).ToList());
                                 break;
                             }
+                        case "Health and Human Services":
+                            {
+                                CourseNames = new ObservableCollection<string>(ApplicationConstants.CoursesRoadmapHHS.Select(x => x.Key).ToList());
+                                break;
+                            }
+                        case "College of Business Administration":
+                            {
+                                CourseNames = new ObservableCollection<string>(ApplicationConstants.CourseRoadmapCBA.Select(x => x.Key).ToList());
+                                break;
+                            }
                     }
                 }
                 RaisePropertyChanged(() => SelectedCollege);
@@ -196,6 +206,16 @@ namespace ProjectCSULB.ViewModel
                         case "College of Natural Sciences and Maths":
                             {
                                 URL = ApplicationConstants.CoursesRoadmapNSM[selectedCourse];
+                                break;
+                            }
+                        case "Health and Human Services":
+                            {
+                                URL = ApplicationConstants.CoursesRoadmapHHS[selectedCourse];
+                                break;
+                            }
+                        case "College of Business Administration":
+                            {
+                                URL = ApplicationConstants.CourseRoadmapCBA[selectedCourse];
                                 break;
                             }
                     }
@@ -307,7 +327,7 @@ namespace ProjectCSULB.ViewModel
             ScheduleForSem = new ObservableCollection<ScheduleReportItem>
                 (Schedule
                 .Where(s => subByCourse
-                .Any(c => c.Title == s.Subject.Replace("    ", String.Empty))));
+                .Any(c => (c.Title!=null && c.Title == s.Subject.Replace("    ", String.Empty)))));
 
             //capacity of all sections for subjects in the semester
             var allSubjectSectionsWithCapacity = ScheduleForSem.GroupBy(x=>x.Subject).Select(s => new { sub = s.Key, totalCapacity = s.Sum(c1=> Convert.ToInt32(c1.Enrollment_Cap)) });
@@ -389,6 +409,8 @@ namespace ProjectCSULB.ViewModel
 
             try
             {
+
+
                 if (String.IsNullOrEmpty(SelectedCourse))
                 {
                     MessageBox.Show("Please Select a Course Work");
@@ -415,18 +437,25 @@ namespace ProjectCSULB.ViewModel
 
                             if (ApplicationConstants.CourseTitles.Any(s => sub.Name.Contains(s)))
                             {
+                                
+
                                 //checking for GE-B2 type of string in the string for general education courses
                                 var temp = Regex.IsMatch(sub.Name, @"GE\-[A-Z]\d");
+                                var subName = ApplicationConstants.CourseTitles.Where(s => sub.Name.Contains(s)).FirstOrDefault();
+                                if(subName.ToString()=="N")
+                                {
+                                    subName = "NRSG";
+                                }
                                 if (!temp)
                                 {
                                     //if subject is not GE course then extract string as follows
                                     var code = Regex.Replace(sub.Name, @"[^0-9]+", "").Substring(0,3);
-                                    sub.Title = ApplicationConstants.CourseTitles.Where(s => sub.Name.Contains(s)).FirstOrDefault() + code;
+                                    sub.Title =  subName + code;
                                 }
                                 else
                                 {
                                     var code = Regex.Replace(sub.Name, @"[^0-9]+", "").Substring(0, 3);
-                                    sub.Title = ApplicationConstants.CourseTitles.Where(s => sub.Name.Contains(s)).FirstOrDefault() + code;
+                                    sub.Title = subName + code;
                                 }
 
                             }
@@ -439,7 +468,10 @@ namespace ProjectCSULB.ViewModel
 
                         foreach (var sub in data.SemesterList[index].SubjectList)
                         {
-                            r += data.SemesterList[index].SemesterName + " | " + data.SemesterList[index].TotalUnits + " | " + sub.Name + " | " + sub.Title + " | " + sub.Units + " \n ";
+                                if (sub.Title != null)
+                                {
+                                    r += data.SemesterList[index].SemesterName + " | " + data.SemesterList[index].TotalUnits + " | " + sub.Name + " | " + sub.Title + " | " + sub.Units + " \n ";
+                                }
                         }
                     
 
@@ -543,6 +575,22 @@ namespace ProjectCSULB.ViewModel
                 .Select(tr => tr.Elements("td").Select(td => td.InnerText.Trim()).ToList())
                 .ToList();
 
+                //list to be used for removing unnecessary columns
+                List<List<string>> toRemove = new List<List<string>>();
+                //preprocessing of site data remove rows with unnecessary information
+                if(table.Count!=12)
+                {
+                    var temp = table;
+                    foreach(var listItems in temp)
+                    {
+                        if(listItems.Where(x=>x.Contains("STUDENT")).ToList().Count>0)
+                        {
+                            toRemove.Add(listItems);
+                        }
+                    }
+                }
+
+                table.RemoveAll(x => toRemove.Contains(x));
 
                 int offsetSemester = 3;
                 int offsetRow = 2;
@@ -558,45 +606,54 @@ namespace ProjectCSULB.ViewModel
                         if (j == 0)
                         {
                             sem1 = new Semester() { SemesterName = table[i][0] };
-                            sem2 = new Semester() { SemesterName = table[i][2] };
+                            sem2 = new Semester() { SemesterName = table[i].Count<=2? " ": table[i][2] };
                         }
                         else if (j == 1)
                         {
-                            List<Subject> sem1Subjects = new List<Subject>();
-                            List<Subject> sem2Subjects = new List<Subject>();
-
-
-                            var indexes1 = new List<int> { 0, 1 };
-                            var indexes2 = new List<int> { 2, 3 };
-
-                            var listSubNamesOddSem = table.Select(x => indexes1.Select(r => x[r].Split('\n')).ToList()).ToList();
-                            var listSubNamesEvenSem = table.Select(x => indexes2.Select(r => x[r].Split('\n')).ToList()).ToList();
-
-                            var namesListSemOdd = listSubNamesOddSem[j][0].ToList().Select(x => x.Trim()).ToList();
-                            var creditListSemOdd = listSubNamesOddSem[j][1].ToList().Select(x => x.Trim()).ToList();
-
-                            var namesListSemEven = listSubNamesEvenSem[j][0].ToList();
-                            var creditListSemEven = listSubNamesEvenSem[j][1].ToList();
-
-
-                            for (int lv = 0; lv < namesListSemOdd.Count(); lv++)
+                            if (sem1.SemesterName.StartsWith("Semester") && sem2.SemesterName.StartsWith("Semester"))
                             {
-                                sem1.SubjectList.Add(new Subject() { Name = namesListSemOdd[lv].Trim(), Units = Convert.ToInt32(creditListSemOdd[lv]) });
+
+                                List<Subject> sem1Subjects = new List<Subject>();
+                                List<Subject> sem2Subjects = new List<Subject>();
+
+
+                                var indexes1 = new List<int> { 0, 1 };
+                                var indexes2 = new List<int> { 2, 3 };
+
+                                var listSubNamesOddSem = table.Select(x => indexes1.Select(r => x[r].Split('\n')).ToList()).ToList();
+                                var listSubNamesEvenSem = table.Select(x => indexes2.Select(r => x.Count == 4 ? x[r].Split('\n') : new string[] { " ", " " }).ToList()).ToList();
+
+                                var namesListSemOdd = listSubNamesOddSem[j][0].ToList().Select(x => x.Trim()).ToList();
+                                var creditListSemOdd = listSubNamesOddSem[j][1].ToList().Select(x => x.Trim()).ToList();
+
+                                var namesListSemEven = listSubNamesEvenSem[j][0].ToList().Select(x => x.Trim()).ToList();
+                                var creditListSemEven = listSubNamesEvenSem[j][1].ToList().Select(x => x.Trim()).ToList();
+
+
+                                for (int lv = 0; lv < namesListSemOdd.Count(); lv++)
+                                {
+                                    if (!(namesListSemOdd.Where(x => x.Length > 0).ToList().Count != namesListSemOdd.Count))
+                                    {
+                                        sem1.SubjectList.Add(new Subject() { Name = Regex.Replace( namesListSemOdd[lv], "[^0-9a-zA-Z]+", "").Trim(), Units = Convert.ToInt32(Regex.Replace( creditListSemOdd[lv], "[^0-9a-zA-Z]+", "").TrimStart(' ').Substring(0, 1)) });
+                                    }
+                                }
+
+                                for (int lv1 = 0; lv1 < namesListSemEven.Count(); lv1++)
+                                {
+                                    if (!(namesListSemEven.Where(x => x.Length > 0).ToList().Count != namesListSemEven.Count))
+                                    {
+                                        sem2.SubjectList.Add(new Subject() { Name = Regex.Replace(namesListSemEven[lv1], "[^0-9a-zA-Z]+", "").Trim(), Units = Convert.ToInt32(Regex.Replace(creditListSemEven[lv1], "[^0-9a-zA-Z]+", "").TrimStart(' ').Substring(0, 1)) });
+                                    }
+                                }
+
+                                sem1.TotalUnits = creditListSemOdd.Sum(x => Convert.ToInt32(Regex.Replace(x, "[^0-9a-zA-Z]+", "").Substring(0, 1))); //remove any special characters
+
+                                sem2.TotalUnits = creditListSemEven.Sum(x => String.IsNullOrEmpty(x)!=true ? Convert.ToInt32(Regex.Replace(x, "[^0-9a-zA-Z]+", "").Substring(0, 1)):0);
+
+                                semList.Add(sem1);
+                                semList.Add(sem2);
+
                             }
-
-                            for (int lv1 = 0; lv1 < namesListSemEven.Count(); lv1++)
-                            {
-                                sem2.SubjectList.Add(new Subject() { Name = namesListSemEven[lv1].Trim(), Units = Convert.ToInt32(creditListSemEven[lv1]) });
-                            }
-
-                            sem1.TotalUnits = creditListSemOdd.Sum(x => Convert.ToInt32(x));
-
-                            sem2.TotalUnits = creditListSemEven.Sum(x => Convert.ToInt32(x));
-
-                            semList.Add(sem1);
-                            semList.Add(sem2);
-
-
                         }
                     }
 
