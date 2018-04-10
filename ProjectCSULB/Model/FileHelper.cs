@@ -165,9 +165,9 @@ namespace ProjectCSULB.Model
             //Map(m => m.APDB_Learning_Mode).Name("APDB Learning Mode");
             //Map(m => m.APDB_Learning_Mode_Descr).Name("APDB Learning Mode Descr");
             Map(m => m.Begin_Time).Name("Begin Time");
-            Map(m => m.Enrollment_Cap).Name("Enrollment Cap");
-            Map(m => m.Enrollment_Act).Name("Enrollment Act");
-            Map(m => m.WaitList_Total).Name("Waitlist Total");
+            //Map(m => m.Enrollment_Cap).Name("Enrollment Cap");
+            //Map(m => m.Enrollment_Act).Name("Enrollment Act");
+            //Map(m => m.WaitList_Total).Name("Waitlist Total");
             //Map(m => m.Catalog_Nbr).Name("Catalog Nbr");
             Map(m => m.End_Time).Name("End Time");
             Map(m => m.Class_Nbr).Name("Class Nbr");
@@ -176,7 +176,7 @@ namespace ProjectCSULB.Model
             Map(m => m.Days).Name("Days");
             //Map(m => m.Department).Name("Department");
             Map(m => m.Section).Name("Section");
-            Map(m => m.Session).Name("Session");
+            //Map(m => m.Session).Name("Session");
             Map(m => m.Subject).Name("Subject");
             Map(m => m.Title).Name("Title");
             Map(m => m.Units).Name("Units");

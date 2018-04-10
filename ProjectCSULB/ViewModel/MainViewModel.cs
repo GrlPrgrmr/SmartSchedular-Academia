@@ -12,6 +12,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using ProjectCSULB.Views;
+using GalaSoft.MvvmLight.Messaging;
+using System.Reflection;
 
 namespace ProjectCSULB.ViewModel
 {
@@ -270,6 +272,14 @@ namespace ProjectCSULB.ViewModel
 
         private string baseYear;
 
+        private bool showStudentButton;
+
+        public bool ShowStudentButton
+        {
+            get { return showStudentButton; }
+            set { showStudentButton = value; RaisePropertyChanged(() => ShowStudentButton); }
+        }
+
         private string studentHeadCount;
 
         public string StudentHeadCount
@@ -309,6 +319,7 @@ namespace ProjectCSULB.ViewModel
             GetConflictsCommand = new RelayCommand(getConflicts);
             ConflictDataAnalysis = new ObservableCollection<ConflictData>();
             baseYear = "2012";
+            ShowStudentButton = false;
             CourseNames = new ObservableCollection<string>();
             CollegeList = new ObservableCollection<string>(ApplicationConstants.CollegeList);
             //CourseNames = new ObservableCollection<string>( ApplicationConstants.CourseListStrings);
@@ -323,14 +334,15 @@ namespace ProjectCSULB.ViewModel
             List<Subject> subByCourse = CurrentCourse.SemesterList[getSemesterIndex()==0?getSemesterIndex():getSemesterIndex()-1].SubjectList;
 
             var temp = Schedule.Select(s => s.Subject.Replace("    ", String.Empty)).ToList();
+            var temp2 = Schedule.Where(sched => sched.Title.Length > 0).ToList<ScheduleReportItem>();
 
             ScheduleForSem = new ObservableCollection<ScheduleReportItem>
-                (Schedule
+                (Schedule.Where(sched=>sched.Title.Length>0).ToList<ScheduleReportItem>()
                 .Where(s => subByCourse
-                .Any(c => (c.Title!=null && c.Title == s.Subject.Replace("    ", String.Empty)))));
+                .Any(c => ((!string.IsNullOrEmpty(c.Title)) && (s.Subject.Replace("    ", String.Empty).Contains(c.Title))))));
 
             //capacity of all sections for subjects in the semester
-            var allSubjectSectionsWithCapacity = ScheduleForSem.GroupBy(x=>x.Subject).Select(s => new { sub = s.Key, totalCapacity = s.Sum(c1=> Convert.ToInt32(c1.Enrollment_Cap)) });
+            //var allSubjectSectionsWithCapacity = ScheduleForSem.GroupBy(x=>x.Subject).Select(s => new { sub = s.Key, totalCapacity = s.Sum(c1=> Convert.ToInt32(c1.Enrollment_Cap)) });
 
             foreach (var item in ScheduleForSem)
             {
@@ -382,7 +394,7 @@ namespace ProjectCSULB.ViewModel
             var subjectsSectionsConflicts = ScheduleForSem.Where(s => s.Color == "Color" && (s.Components == "SEM" || s.Components == "LEC")).
                                     GroupBy(row => row.Subject).ToDictionary(g=>g.Key, g=>g.ToList());
 
-            
+
             //extract capacity of all the sections conflicting with somebody
 
             /*ConflictDataAnalysis = new ObservableCollection<ConflictData>( ScheduleForSem.Where(s=> s.Color == "Color" && (s.Components == "SEM" || s.Components=="LEC")).
@@ -390,15 +402,16 @@ namespace ProjectCSULB.ViewModel
                                     new ConflictData { SubjectName = c.First().Subject, ConflictingSectionCapacity = c.Sum(c1=> Convert.ToInt32( c1.Enrollment_Cap)),Demand=studentCountInMajor}));*/
 
             //updating all sections capacity for conflict data
-            List<ConflictData> testData = (from cd in ConflictDataAnalysis
-                           join ascd in allSubjectSectionsWithCapacity on cd.SubjectName equals ascd.sub
-                           select new ConflictData() { SubjectName = cd.SubjectName,
-                                                       ConflictingSectionCapacity=cd.ConflictingSectionCapacity,
-                                                        Demand=cd.Demand,
-                                                         TotalCapacity = ascd.totalCapacity}).ToList();
+            //List<ConflictData> testData = (from cd in ConflictDataAnalysis
+            //               join ascd in allSubjectSectionsWithCapacity on cd.SubjectName equals ascd.sub
+            //               select new ConflictData() { SubjectName = cd.SubjectName,
+            //                                           ConflictingSectionCapacity=cd.ConflictingSectionCapacity,
+            //                                            Demand=cd.Demand,
+            //                                             TotalCapacity = ascd.totalCapacity}).ToList();
 
-            ConflictDataAnalysis =new ObservableCollection<ConflictData>( testData.ToList());
+            //ConflictDataAnalysis =new ObservableCollection<ConflictData>( testData.ToList());
 
+            ShowStudentButton = true;
             
              }
 
@@ -441,7 +454,7 @@ namespace ProjectCSULB.ViewModel
 
                                 //checking for GE-B2 type of string in the string for general education courses
                                 var temp = Regex.IsMatch(sub.Name, @"GE\-[A-Z]\d");
-                                var subName = ApplicationConstants.CourseTitles.Where(s => sub.Name.Contains(s)).FirstOrDefault();
+                                var subName = ApplicationConstants.CourseTitles.Where(s => sub.Name.Contains(s)).FirstOrDefault().ToUpper();
                                 if(subName.ToString()=="N")
                                 {
                                     subName = "NRSG";
@@ -477,8 +490,8 @@ namespace ProjectCSULB.ViewModel
 
                     CourseData = data.Name + "\n" + " | " + r.ToString();
 
-
-                    using (CsvReader csv = new CsvReader(File.OpenText(@"E:\New Job\schedule\"+SelectedSem+SelectedYear+".csv")))
+                    string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"New Job\schedule\" + SelectedSem + SelectedYear + ".csv");
+                    using (CsvReader csv = new CsvReader(File.OpenText(path)))
                     {
                         csv.Configuration.RegisterClassMap<ScheduleMap>();
                         IEnumerable<ScheduleReportItem> dataReport = csv.GetRecords<ScheduleReportItem>().ToList();
@@ -503,9 +516,11 @@ namespace ProjectCSULB.ViewModel
 
         private void showStudentsData()
         {
-            Window studentWindow = new StudentView();
-            studentWindow.DataContext = new StudentViewModel(ScheduleForSem,BatchSize,CurrentCourse,this.SelectedYear,IterationCount);
-            studentWindow.Show();
+            //StudentViewModel svm = new StudentViewModel(ScheduleForSem,BatchSize,CurrentCourse,this.SelectedYear,IterationCount);
+            //StudentViewUserControl svc = new StudentViewUserControl();
+            //svc.DataContext = svm;
+
+            MessengerInstance.Send(new MessageScheduleToStudent() { Sched = ScheduleForSem, BatchSize = BatchSize, Course_ = CurrentCourse, Year = this.SelectedYear, Count = IterationCount });
 
         }
         private int getSemesterIndex()

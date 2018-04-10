@@ -68,7 +68,7 @@ namespace ProjectCSULB.Model
             Major = currentCourse.Name;
             RunId = new Random(1).ToString();
             Year = year;
-            StudentsAffected = studentsAffected;
+            StudentsAffected = studentAffected;
             if (StudentsAffected > 0)
             {
                 NoConflictStudentCount = (Convert.ToInt32(studentHeadCount) - studentAffected).ToString();

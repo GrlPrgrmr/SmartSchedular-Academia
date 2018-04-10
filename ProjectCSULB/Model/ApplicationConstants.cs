@@ -88,7 +88,7 @@ namespace ProjectCSULB.Model
         }
         }
 
-        public static List<string> CourseTitles { get { return new List<string>() { "ENGR","CHEM","MATH","MAE","C E","PHYS","CECS","BIOL","MICR","ACCT","ECON","IS","STAT","FIN","N","NRSG"}; } }
+        public static List<string> CourseTitles { get { return new List<string>() { "ENGR","CHEM","MATH","MAE","C E","PHYS","CECS","BIOL","MICR","ACCT","Econ","IS","Stat","Fin","N","NRSG"}; } }
 
 
         

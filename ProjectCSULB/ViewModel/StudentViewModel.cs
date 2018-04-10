@@ -1,13 +1,14 @@
 ﻿using CsvHelper;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
+using OxyPlot;
 using ProjectCSULB.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-
+using System.Reflection;
 using System.Windows;
 
 namespace ProjectCSULB.ViewModel
@@ -31,6 +32,13 @@ namespace ProjectCSULB.ViewModel
             set { dataReportList = value; RaisePropertyChanged(() => DataReportList); }
         }
 
+        private PlotModel myModel;
+        
+        public PlotModel MyModel
+        {
+            get { return myModel; }
+            set { myModel = value; }
+        }
 
         public class studetDataAnalysis
         {
@@ -72,9 +80,9 @@ namespace ProjectCSULB.ViewModel
         [PreferredConstructor]
         public StudentViewModel()
         {
-
+            MessengerInstance.Register<MessageScheduleToStudent>(this, (data) => StudentViewModelMessageRecieved(data.Sched,data.BatchSize,data.Course_,data.Year,data.Count)  );
         }
-        public  StudentViewModel(ObservableCollection<ScheduleReportItem> ScheduleForSem,int batchSize,Course currentCourse,string year,int iterCount)
+        public void StudentViewModelMessageRecieved(ObservableCollection<ScheduleReportItem> ScheduleForSem,int batchSize,Course currentCourse,string year,int iterCount)
         {
             StudentData = new ObservableCollection<Student>();
             DataReportList = new ObservableCollection<DataReport>();
@@ -93,7 +101,7 @@ namespace ProjectCSULB.ViewModel
                     {
 
                         student.SubjectList = new List<ScheduleReportItem>();
-                        var groupSubjects = ScheduleForSem.Where(s => s.Components == "SEM" || s.Components == "LEC" || s.Components == "ACT").GroupBy(x => x.Subject);
+                        var groupSubjects = ScheduleForSem.Where(s => s.Components == "SEM" || s.Components == "LEC" || s.Components == "ACT" || s.Components=="LAB").GroupBy(x => x.Subject);
 
                         foreach (var sub in groupSubjects)
                         {
@@ -119,9 +127,9 @@ namespace ProjectCSULB.ViewModel
 
 
                         //figure out how many students from above list have been assigned conflicting sections
-                        //var queryComplex = StudentData.Where(s => s.SubjectList.Any(sub => ScheduleForSem.Where(sc => sc.Color == "Color").Contains(sub)));
-                        
-                        var queryStud = student.SubjectList.Where(s1 => student.SubjectList.Any(s2 => !s1.Subject.Equals(s2.Subject) && s1.Days.Equals(s2.Days) && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList().Select(c => { c.Color = " "; flagStduentConflictFound = true; student.SubInConflict++; return c; }).ToList();
+                        //var queryComplex = StudentData.Where(s => s.SubjectList.Any(sub => ScheduleForSem.Where(sc => sc.Color == "Color").Contains(sub))); && s1.Days.Equals(s2.Days)
+
+                        var queryStud = student.SubjectList.Where(s1 => student.SubjectList.Any(s2 => !s1.Subject.Equals(s2.Subject) && (s1.Days.Length > 0 && s2.Days.Length > 0) && (s1.Days.Contains(s2.Days) || s2.Days.Contains(s1.Days) ) && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList().Select(c => { c.Color = " "; flagStduentConflictFound = true; student.SubInConflict++; return c; }).ToList();
 
                         if (flagStduentConflictFound)
                         {
@@ -130,17 +138,21 @@ namespace ProjectCSULB.ViewModel
                         }
 
 
-                        DataReport dRObj = new DataReport(batchSize, currentCourse, year, StudentsAffected, studentHeadCount);
-
-                        DataReportList.Add(dRObj);
 
                         student.SubjectList.Clear();
 
-
                     }
+
+                    DataReport dRObj = new DataReport(batchSize, currentCourse, year, StudentsAffected, studentHeadCount);
+
+                    DataReportList.Add(dRObj);
+                    StudentsAffected = 0;
+                    
                 }
 
-                FileHelper.CreateCSVFromGenericList(new List<DataReport>(DataReportList), @"E:\New Job\DataReportCSULB.csv");
+                string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"New Job\DataReportCSULB" + currentCourse.Name + ".csv");
+
+                FileHelper.CreateCSVFromGenericList(new List<DataReport>(DataReportList), path);
 
 
                 
@@ -150,6 +162,7 @@ namespace ProjectCSULB.ViewModel
                 MessageBox.Show(ex.Message);
             }
 
+            
             
         }
 

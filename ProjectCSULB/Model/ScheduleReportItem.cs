@@ -34,27 +34,27 @@ namespace ProjectCSULB
 
         private string  enrollment_Cap;
 
-        public string Enrollment_Cap
-        {
-            get { return enrollment_Cap; }
-            set { enrollment_Cap = value; }
-        }
+        //public string Enrollment_Cap
+        //{
+        //    get { return enrollment_Cap; }
+        //    set { enrollment_Cap = value; }
+        //}
 
-        private string enrollment_Act;
+        //private string enrollment_Act;
 
-        public string Enrollment_Act
-        {
-            get { return enrollment_Act; }
-            set { enrollment_Act = value; }
-        }
+        //public string Enrollment_Act
+        //{
+        //    get { return enrollment_Act; }
+        //    set { enrollment_Act = value; }
+        //}
 
-        private string waitlist_Total;
+        //private string waitlist_Total;
 
-        public string WaitList_Total
-        {
-            get { return waitlist_Total; }
-            set { waitlist_Total = value; }
-        }
+        //public string WaitList_Total
+        //{
+        //    get { return waitlist_Total; }
+        //    set { waitlist_Total = value; }
+        //}
 
 
         //private string catalog_nbr;
@@ -73,13 +73,13 @@ namespace ProjectCSULB
             set { section = value; }
         }
 
-        private string sessiom;
+        //private string sessiom;
 
-        public string Session
-        {
-            get { return sessiom; }
-            set { sessiom = value; }
-        }
+        //public string Session
+        //{
+        //    get { return sessiom; }
+        //    set { sessiom = value; }
+        //}
 
         private string class_nbr;
 

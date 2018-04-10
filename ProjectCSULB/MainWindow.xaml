@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local ="clr-namespace:ProjectCSULB.Views"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         xmlns:xceed="http://schemas.xceed.com/wpf/xaml/datagrid"
         mc:Ignorable="d ignore"
@@ -10,115 +11,110 @@
         Width="1200"
         Title="CSULB Smart Schedular"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
-    
+
     <Window.Resources>
-        <xceed:DataGridCollectionViewSource x:Key="mySource" Source="{Binding Path=ScheduleForSem}"></xceed:DataGridCollectionViewSource>
+        <xceed:DataGridCollectionViewSource x:Key="mySource" Source="{Binding Path=ScheduleForSem}">
+        </xceed:DataGridCollectionViewSource>
         <xceed:DataGridCollectionViewSource x:Key="Conflict" Source="{Binding Path=ConflictDataAnalysis}"></xceed:DataGridCollectionViewSource>
         <ResourceDictionary x:Key="dict">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Skins/MainSkin.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
+        
     </Window.Resources>
 
     <DockPanel>
         <DockPanel DockPanel.Dock="Top">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,20,0,0">
-                <StackPanel Orientation="Horizontal">
-                    <Label FontSize="18">Select College</Label>
-                    <ComboBox Width="300" ItemsSource="{Binding CollegeList}" SelectedItem="{Binding SelectedCollege, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
-                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                    <Label DockPanel.Dock="Left" FontSize="18" Margin="0,0,0,0">URL</Label>
-                    <TextBox TextWrapping="Wrap" IsReadOnly="True" DockPanel.Dock="Left" Margin="40,0,0,0"  Width="400" Height="40" Text="{Binding Path=URL}"></TextBox>
+            <Border DockPanel.Dock="Left" BorderBrush="#FFBDAFAF" 
+                    Margin="0,50,0,0" 
+                    Height="500" MaxHeight="500" Background="#FFE6E0E0" BorderThickness="3">
+                <DockPanel  >
+                    <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="0,20,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Label FontSize="18">Select College</Label>
+                            <ComboBox Width="300" Margin="20,0,0,0" ItemsSource="{Binding CollegeList}" SelectedItem="{Binding SelectedCollege, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <Label DockPanel.Dock="Left" FontSize="18" Margin="0,0,0,0">URL</Label>
+                            <TextBox TextWrapping="Wrap" IsReadOnly="True" 
+                             DockPanel.Dock="Left" Margin="100,0,0,0"  Width="200" Height="40" Text="{Binding Path=URL}"></TextBox>
 
-                </StackPanel>
+                        </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                    <Label FontSize="18" HorizontalAlignment="Left">Select Course</Label>
-                    <ComboBox ItemsSource="{Binding Path=CourseNames}" SelectedItem="{Binding Path=SelectedCourse,UpdateSourceTrigger=PropertyChanged}" Margin="20,0,0,0" Width="350" Height="40"></ComboBox>
-                </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,20,0">
+                            <Label FontSize="18" HorizontalAlignment="Left">Select Course</Label>
+                            <ComboBox ItemsSource="{Binding Path=CourseNames}" SelectedItem="{Binding Path=SelectedCourse,UpdateSourceTrigger=PropertyChanged}" Margin="20,0,0,0" Width="300" Height="40"></ComboBox>
+                        </StackPanel>
 
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-               
-                <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Label FontSize="18">Semester</Label>
-                        <ComboBox Width="100" Margin="10,0,0,0" ItemsSource="{Binding SemList}"  SelectedItem="{Binding SelectedSem,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                        <Label FontSize="18">Year</Label>
-                        <ComboBox Width="100" Margin="10,0,0,0" ItemsSource="{Binding YearsList}" SelectedItem="{Binding SelectedYear,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                        <Label FontSize="18">Batch Size</Label>
-                        <TextBox Text="{Binding Path=BatchSize}" Width="100"></TextBox>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                        <Label FontSize="18">Iteration Count</Label>
-                        <TextBox Text="{Binding Path=IterationCount}" Width="100"></TextBox>
+                    <StackPanel Orientation="Vertical" Margin="0,10,0,51">
+
+                        <StackPanel Orientation="Vertical" Margin="0,0,0,0" Height="230">
+                            <StackPanel Orientation="Horizontal">
+                                <Label FontSize="18">Semester</Label>
+                                <ComboBox Width="100" Margin="55,0,0,0" ItemsSource="{Binding SemList}"  SelectedItem="{Binding SelectedSem,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Label FontSize="18">Year</Label>
+                                <ComboBox Width="100" Margin="95,0,0,0" ItemsSource="{Binding YearsList}" SelectedItem="{Binding SelectedYear,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Label FontSize="18">Batch Size</Label>
+                                <TextBox Text="{Binding Path=BatchSize}" Margin="50,0,0,0" Width="100"></TextBox>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Label FontSize="18">Iteration Count</Label>
+                                <TextBox Text="{Binding Path=IterationCount}" Width="100" Margin="10,0,0,0"></TextBox>
+                            </StackPanel>
+                             <Button Margin="30,10,0,0" Height="40" Width="150" Command="{Binding Path=GetConflictsCommand}" >Get Conflicts</Button>
+                        </StackPanel>
                     </StackPanel>
-                    <Button Margin="30,0,0,0" Height="40" Width="150" Command="{Binding Path=GetConflictsCommand}" >Get Conflicts</Button>
-                </StackPanel>
-            </StackPanel>
 
-        </DockPanel>
-        <DockPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
-        <DockPanel DockPanel.Dock="Top" >
-
-                <StackPanel Orientation="Vertical">
-                <Grid MaxHeight="400">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Height="400">
-                    <Grid ScrollViewer.CanContentScroll="True" >
-                    <TextBlock DockPanel.Dock="Left"   Text="{Binding Path=CourseData}" MaxWidth="500"></TextBlock>
-                    </Grid>
-                </ScrollViewer>
-                </Grid>
-
-                    <DockPanel>
-                        <xceed:DataGridControl AutoCreateColumns="True" Height="300" ItemsSource="{Binding Source={StaticResource Conflict}}"></xceed:DataGridControl>
-                    </DockPanel>
-
-                    <Button Width="150" Height="40" Margin="0,10,0,0" Command="{Binding SeeStudentsData}">See Students Data</Button>
-                </StackPanel>
-
-                <!--<DataGrid DockPanel.Dock="Right" ItemsSource="{Binding Path=Schedule}" MaxHeight="500"></DataGrid>-->
+                </DockPanel>
+            </Border>
+            <DockPanel DockPanel.Dock="Right" Margin="20,0,0,0">
 
                 <DockPanel>
+                    <Label DockPanel.Dock="Top" 
+                           Background="#FFE6E0E0" BorderBrush="#FFBDAFAF" BorderThickness="3" Width="300" 
+                           HorizontalContentAlignment="Center"
+                           Height="30" Margin="0,10,0,10" FontStyle="Italic" FontWeight="Bold">
+                        Schedule Data With Conflicts (Color)
+                    </Label>
                     <xceed:DataGridControl 
-                        ItemsSource="{Binding Source={StaticResource mySource}}" 
-                        AutoCreateColumns="True">
-                        <!--<xceed:Cell>
-                            <Style TargetType="xceed:Cell">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Color}" Value="Color">
-                                        <Setter Property="Background" Value="Red"></Setter>
-                                    </DataTrigger>
-
-                                </Style.Triggers>
-                            </Style>
-                        </xceed:Cell>-->
                         
+                        ItemsSource="{Binding Source={StaticResource mySource}}" 
+                        AutoCreateColumns="True" MaxHeight="500" Height="500">
+
                     </xceed:DataGridControl>
                 </DockPanel>
+            </DockPanel>
         </DockPanel>
-            <!--<DockPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
-                <DataGrid ItemsSource="{Binding Path=ScheduleForSem}" MinHeight="300">
-                    <DataGrid.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Color}" Value="Color">
-                                    <Setter Property="Background" Value="Red"></Setter>
-                                </DataTrigger>
-                                
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.CellStyle>
-                </DataGrid>
-            </DockPanel>-->
+        
+            
+       
+        <DockPanel DockPanel.Dock="Bottom">
+
+            <StackPanel DockPanel.Dock="Top">
+                <Button Width="150" Height="40" Margin="0,10,0,0" Command="{Binding SeeStudentsData}" IsEnabled="{Binding ShowStudentButton}">See Students Data</Button>
+            </StackPanel>
+            <StackPanel Orientation="Vertical">
+
+                <Label 
+                           Background="#FFE6E0E0" BorderBrush="#FFBDAFAF" BorderThickness="3" Width="300" 
+                           HorizontalContentAlignment="Center"
+                           Height="30" Margin="0,10,0,10" FontStyle="Italic" FontWeight="Bold">
+                    Students Effected</Label>
+                <DockPanel>
+                    <ContentControl>
+                        <local:StudentViewUserControl></local:StudentViewUserControl>
+                    </ContentControl>
+                </DockPanel>
+            </StackPanel>
         </DockPanel>
     </DockPanel>
+
 </Window>
