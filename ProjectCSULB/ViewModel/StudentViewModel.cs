@@ -152,6 +152,8 @@ namespace ProjectCSULB.ViewModel
 
                 string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"New Job\DataReportCSULB" + currentCourse.Name + ".csv");
 
+                double avgStudEffected = DataReportList.Average(f => f.StudentsAffected);
+
                 FileHelper.CreateCSVFromGenericList(new List<DataReport>(DataReportList), path);
 
 

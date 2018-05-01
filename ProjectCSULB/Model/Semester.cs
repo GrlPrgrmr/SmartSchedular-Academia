@@ -48,6 +48,23 @@ namespace ProjectCSULB.Model
             set { _subjectList = value; }
         }
 
+        private int batchSize;
+
+        public int BatchSize
+        {
+            get { return batchSize; }
+            set { batchSize = value; }
+        }
+
+        private int avgStudentsEffected;
+
+        public int AvgStudentEffected
+        {
+            get { return avgStudentsEffected; }
+            set { avgStudentsEffected = value; }
+        }
+
+
 
     }
 }

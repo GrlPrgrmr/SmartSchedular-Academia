@@ -448,27 +448,41 @@ namespace ProjectCSULB.ViewModel
                         foreach (var sub in sem.SubjectList)
                         {
 
-                            if (ApplicationConstants.CourseTitles.Any(s => sub.Name.Contains(s)))
+                            if (ApplicationConstants.CourseTitles.Any(s => sub.Name.ToUpper().Contains(s)))
                             {
                                 
 
                                 //checking for GE-B2 type of string in the string for general education courses
-                                var temp = Regex.IsMatch(sub.Name, @"GE\-[A-Z]\d");
-                                var subName = ApplicationConstants.CourseTitles.Where(s => sub.Name.Contains(s)).FirstOrDefault().ToUpper();
-                                if(subName.ToString()=="N")
-                                {
-                                    subName = "NRSG";
-                                }
+                                var temp = (Regex.IsMatch(sub.Name, @"GE\-[A-Z]\d") || sub.Name.Contains("Written") || sub.Name.Contains("Oral"));
+
+                                var subName = ApplicationConstants.CourseTitles.Where(s => sub.Name.ToUpper().Contains(s)).FirstOrDefault().ToUpper();
+
+                                //if(subName.ToString()=="N")
+                                //{
+                                //    subName = "NRSG";
+                                //}
                                 if (!temp)
                                 {
                                     //if subject is not GE course then extract string as follows
-                                    var code = Regex.Replace(sub.Name, @"[^0-9]+", "").Substring(0,3);
-                                    sub.Title =  subName + code;
+                                    //special accomodation for subjects like CHEM111A , MATH119A, PHYS100A, CHEM 320A, CHEM371A extract 4 length substring instead of three for usual subjects
+                                    var tempCode = Regex.Replace(sub.Name, @"[^0-9]+", "").Substring(0, 3);
+                                    if ((subName == "CHEM" && (tempCode == "111" || tempCode == "320" || tempCode == "371")) ||
+                                        (subName == "MATH" && tempCode == "119") ||
+                                        (subName == "PHYS" && tempCode == "100"))
+                                    {
+                                        var code =sub.Name.Substring(4, 4);
+                                        sub.Title = subName + code;
+                                    }
+                                    else
+                                    {
+                                        var code = Regex.Replace(sub.Name, @"[^0-9]+", "").Substring(0, 3);
+                                        sub.Title = subName + code;
+                                    }
                                 }
                                 else
                                 {
-                                    var code = Regex.Replace(sub.Name, @"[^0-9]+", "").Substring(0, 3);
-                                    sub.Title = subName + code;
+                                   // var code = "NA";
+                                    sub.Title = "ALIEN" ;
                                 }
 
                             }
