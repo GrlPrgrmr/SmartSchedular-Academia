@@ -80,9 +80,9 @@ namespace ProjectCSULB.ViewModel
         [PreferredConstructor]
         public StudentViewModel()
         {
-            MessengerInstance.Register<MessageScheduleToStudent>(this, (data) => StudentViewModelMessageRecieved(data.Sched,data.BatchSize,data.Course_,data.Year,data.Count)  );
+            MessengerInstance.Register<MessageScheduleToStudent>(this, (data) => StudentViewModelMessageRecieved(data.Sched,data.FullSchedule,data.BatchSize,data.CurrentCourse,data.Year,data.Count)  );
         }
-        public void StudentViewModelMessageRecieved(ObservableCollection<ScheduleReportItem> ScheduleForSem,int batchSize,Course currentCourse,string year,int iterCount)
+        public void StudentViewModelMessageRecieved(ObservableCollection<ScheduleReportItem> ScheduleForSem,List<ScheduleReportItem> fullSchedule,int batchSize,Course currentCourse,string year,int iterCount)
         {
             StudentData = new ObservableCollection<Student>();
             DataReportList = new ObservableCollection<DataReport>();
@@ -98,7 +98,7 @@ namespace ProjectCSULB.ViewModel
                 {
                     //trying monte carlo simulation to generate probability distribution for students taking up sections
                     foreach (var student in StudentData)
-                    {
+                        {
 
                         student.SubjectList = new List<ScheduleReportItem>();
                         var groupSubjects = ScheduleForSem.Where(s => s.Components == "SEM" || s.Components == "LEC" || s.Components == "ACT" || s.Components=="LAB").GroupBy(x => x.Subject);
@@ -143,7 +143,7 @@ namespace ProjectCSULB.ViewModel
 
                     }
 
-                    DataReport dRObj = new DataReport(batchSize, currentCourse, year, StudentsAffected, studentHeadCount);
+                    DataReport dRObj = new DataReport(batchSize, currentCourse, year, StudentsAffected, StudentData.ToList(),iterCount,ScheduleForSem.ToList());
 
                     DataReportList.Add(dRObj);
                     StudentsAffected = 0;

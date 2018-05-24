@@ -18,6 +18,15 @@ namespace ProjectCSULB.Model
             set { sched = value; }
         }
 
+        private List<ScheduleReportItem> fullSchedule;
+
+        public List<ScheduleReportItem> FullSchedule
+        {
+            get { return fullSchedule; }
+            set { fullSchedule = value; }
+        }
+
+
         private int batchSize;
 
         public int BatchSize
@@ -26,12 +35,12 @@ namespace ProjectCSULB.Model
             set { batchSize = value; }
         }
 
-        private Course course;
+        private Course currentCourse;
 
-        public Course Course_
+        public Course CurrentCourse
         {
-            get { return course; }
-            set { course = value; }
+            get { return currentCourse; }
+            set { currentCourse = value; }
         }
 
         private string year;
@@ -49,6 +58,11 @@ namespace ProjectCSULB.Model
             get { return count; }
             set { count = value; }
         }
+
+      
+
+       
+
 
 
     }

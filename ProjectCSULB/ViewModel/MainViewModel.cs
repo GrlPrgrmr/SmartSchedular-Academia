@@ -534,7 +534,7 @@ namespace ProjectCSULB.ViewModel
             //StudentViewUserControl svc = new StudentViewUserControl();
             //svc.DataContext = svm;
 
-            MessengerInstance.Send(new MessageScheduleToStudent() { Sched = ScheduleForSem, BatchSize = BatchSize, Course_ = CurrentCourse, Year = this.SelectedYear, Count = IterationCount });
+            MessengerInstance.Send(new MessageScheduleToStudent() { Sched = ScheduleForSem,FullSchedule=Schedule ,BatchSize = BatchSize, CurrentCourse = CurrentCourse, Year = this.SelectedYear, Count = IterationCount});
 
         }
         private int getSemesterIndex()
