@@ -329,9 +329,10 @@ namespace ProjectCSULB.ViewModel
 
         private void getConflicts()
         {
-            getData();
+            getData();  
+            assignScheduleToAllSems();
 
-            List<Subject> subByCourse = CurrentCourse.SemesterList[getSemesterIndex()==0?getSemesterIndex():getSemesterIndex()-1].SubjectList;
+            List<Subject> subByCourse = CurrentCourse.SemesterList[0].SubjectList;
 
             var temp = Schedule.Select(s => s.Subject.Replace("    ", String.Empty)).ToList();
             var temp2 = Schedule.Where(sched => sched.Title.Length > 0).ToList<ScheduleReportItem>();
@@ -415,6 +416,25 @@ namespace ProjectCSULB.ViewModel
             
              }
 
+        private void assignScheduleToAllSems()
+        {
+            int indexCurrentSem = Array.IndexOf(ApplicationConstants.SemesterList, SelectedSem);
+
+            foreach (var sem in CurrentCourse.SemesterList)
+            {
+
+                sem.SubjectList = CurrentCourse.SemesterList[indexCurrentSem].SubjectList;
+
+                sem.SemSchedule = new List<ScheduleReportItem>
+                (Schedule.Where(sched => sched.Title.Length > 0).ToList()
+                .Where(s => sem.SubjectList
+                .Any(c => ((!string.IsNullOrEmpty(c.Title)) && (s.Subject.Replace("    ", String.Empty).Contains(c.Title))))));
+
+                indexCurrentSem++;
+
+            }
+        }
+
         private void getData()
         {
             Course data = new Course();
@@ -422,7 +442,6 @@ namespace ProjectCSULB.ViewModel
 
             try
             {
-
 
                 if (String.IsNullOrEmpty(SelectedCourse))
                 {
@@ -438,8 +457,8 @@ namespace ProjectCSULB.ViewModel
                             from sub in sem.SubjectList
                             select new { data = sem.SemesterName+" | "+sem.TotalUnits+" | "+sub.Name+" | "+sub.Units};*/
 
-                    int index = getSemesterIndex();
-                    if(index!=0)
+                    int index = Array.IndexOf(ApplicationConstants.SemesterList, SelectedSem);
+                    if (index!=0)
                     {
                         index = index - 1;
                     }
@@ -500,7 +519,9 @@ namespace ProjectCSULB.ViewModel
                                     r += data.SemesterList[index].SemesterName + " | " + data.SemesterList[index].TotalUnits + " | " + sub.Name + " | " + sub.Title + " | " + sub.Units + " \n ";
                                 }
                         }
-                    
+
+
+
 
                     CourseData = data.Name + "\n" + " | " + r.ToString();
 
@@ -537,17 +558,16 @@ namespace ProjectCSULB.ViewModel
             MessengerInstance.Send(new MessageScheduleToStudent() { Sched = ScheduleForSem,FullSchedule=Schedule ,BatchSize = BatchSize, CurrentCourse = CurrentCourse, Year = this.SelectedYear, Count = IterationCount});
 
         }
-        private int getSemesterIndex()
+        private int getSemesterIndex(int index)
         {
-            int indexCurrentSem;
-            indexCurrentSem = Array.IndexOf(ApplicationConstants.SemesterList,SelectedSem);
+          
             if (SelectedYear==baseYear || SelectedSem=="Spring" || SelectedSem == "Summer")
             {
-                return indexCurrentSem;
+                return index;
             }
             else
             {
-                return indexCurrentSem + 4;
+                return index + 4;
             }
          }
 

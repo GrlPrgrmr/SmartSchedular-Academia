@@ -64,6 +64,14 @@ namespace ProjectCSULB.Model
             set { avgStudentsEffected = value; }
         }
 
+        private List<ScheduleReportItem> semSchedule;
+
+        public List<ScheduleReportItem> SemSchedule
+        {
+            get { return semSchedule; }
+            set { semSchedule = value; }
+        }
+
 
 
     }

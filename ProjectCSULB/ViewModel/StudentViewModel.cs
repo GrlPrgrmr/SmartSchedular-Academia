@@ -68,6 +68,20 @@ namespace ProjectCSULB.ViewModel
 
         public static List<Student> getStudentData(string major)
         {
+
+            string[] studentsData = File.ReadAllLines(@"E:\New Job\Students Data\" + major + ".csv");
+
+            List<Student> studs = (from studentLine in studentsData
+                                   let splitData = studentLine.Split(',')
+                                   select new Student()
+                                   {
+                                       StudentId = splitData[0],
+                                       StudentName = splitData[1],
+                                       Major = splitData[2],
+                                       FreshmanYear = splitData[3]
+
+                                   }).ToList();
+
             using (CsvReader csv = new CsvReader(File.OpenText(@"E:\New Job\Students Data\"+major+".csv")))
             {
                 csv.Configuration.RegisterClassMap<StudentMap>();
@@ -75,6 +89,7 @@ namespace ProjectCSULB.ViewModel
                 return dataReport;
             }
 
+            
         }
 
         [PreferredConstructor]
@@ -129,21 +144,23 @@ namespace ProjectCSULB.ViewModel
                         //figure out how many students from above list have been assigned conflicting sections
                         //var queryComplex = StudentData.Where(s => s.SubjectList.Any(sub => ScheduleForSem.Where(sc => sc.Color == "Color").Contains(sub))); && s1.Days.Equals(s2.Days)
 
-                        var queryStud = student.SubjectList.Where(s1 => student.SubjectList.Any(s2 => !s1.Subject.Equals(s2.Subject) && (s1.Days.Length > 0 && s2.Days.Length > 0) && (s1.Days.Contains(s2.Days) || s2.Days.Contains(s1.Days) ) && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time)))).ToList().Select(c => { c.Color = " "; flagStduentConflictFound = true; student.SubInConflict++; return c; }).ToList();
+                        var queryStud = student.SubjectList.Where(s1 => student.SubjectList.Any(s2 => !s1.Subject.Equals(s2.Subject) 
+                                                                                                && (s1.Days.Length > 0 && s2.Days.Length > 0) 
+                                                                                                && (s1.Days.Contains(s2.Days) || s2.Days.Contains(s1.Days)) 
+                                                                                                && ((s1.B_Time <= s2.E_Time) && (s2.B_Time <= s1.E_Time))
+                                                                                                )).ToList().Select(c => { c.Color = " "; flagStduentConflictFound = true; student.SubInConflict++; return c; }).ToList();
 
                         if (flagStduentConflictFound)
                         {
-                            StudentsAffected++;
+                            StudentsAffected++; 
                             flagStduentConflictFound = false;
                         }
-
-
-
+                        
                         student.SubjectList.Clear();
 
                     }
-
-                    DataReport dRObj = new DataReport(batchSize, currentCourse, year, StudentsAffected, StudentData.ToList(),iterCount,ScheduleForSem.ToList());
+                    currentCourse.SemesterList[0].AvgStudentEffected = StudentsAffected;
+                    DataReport dRObj = new DataReport(batchSize, currentCourse, year, StudentData.ToList());
 
                     DataReportList.Add(dRObj);
                     StudentsAffected = 0;
