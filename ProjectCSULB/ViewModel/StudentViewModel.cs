@@ -69,7 +69,7 @@ namespace ProjectCSULB.ViewModel
         public static List<Student> getStudentData(string major)
         {
 
-            string[] studentsData = File.ReadAllLines(@"E:\New Job\Students Data\" + major + ".csv");
+            string[] studentsData = File.ReadAllLines(@"E:\New Job\Students Data\" + major + ".csv").Skip(1).ToArray();
 
             List<Student> studs = (from studentLine in studentsData
                                    let splitData = studentLine.Split(',')
@@ -126,6 +126,7 @@ namespace ProjectCSULB.ViewModel
                             var subjectPicked = sub.ToList()[indexRandom];
                             student.SubjectList.Add(subjectPicked);
                         }
+
 
 
                         //foreach (var sub in groupSubjects)
